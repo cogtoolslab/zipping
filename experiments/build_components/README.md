@@ -13,7 +13,7 @@ This experiment explores the components of building activity that affect memory.
 
 
 
-# Old-New version
+# Recognition (Old-New task)
 
 Plugins:
 - `block-tower-build`
@@ -28,10 +28,11 @@ Plugins:
   - assigned in: building_components_build_recall_stimuli_backup.ipynb
   - stimuli in: `build_components_pilot` collection
   - assignments stored in: `df_build_components_pilot_2_assignments.csv`
-- Ran x ppts
+- Ran 50 ppts
+- Presented at VSS 2023
 
 
-# Build Retrieval/ "build_recall" version
+# Recall (rebuild task)
 
 - New config: experimentConfigBuildRetrieval
 - New iteration names: building_components_build_recall_*
@@ -58,10 +59,14 @@ Plugins:
 ## build_components_build_recall_prolific_pilot_6_towers_2_rep
 - Same as above but 2 repetitions of each encoding trial
   - Added in rep functionality to experimentSetup
-- N=50 (50 completed)
+- N=50 (i.e. 50 completed)
+- Presented at VSS 2023
+
+
 
 
 ## build_components_build_recall_6_towers_3_rep_color
+- Intended as replication of prior recall results but with stronger memories i.e. by assigning each stimulus a unique color and using 3 repetitions of each stimulus.
 - 3 reps
 - Each stimulus is assigned a unique color
 - 
