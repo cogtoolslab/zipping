@@ -10,13 +10,16 @@
 
 
 # Running experiments
+A full breakdown of the experiment versions can be found in the README in the `experiments` folder.
+
 - `cd experiments/`
-- `npm run build`
-  - This compiles javascript code into a series of bundles, that are read into experiment webpages. It then runs `app.js`, which creates a server at a specified port or the default in `app.js`.
+- In two tmux panes run `node app.js` and `node store.js`.
 - http://localhost:PORTNUM/ will then serve your experiment files.
   - e.g. http://localhost:PORTNUM/index.html should reach the experiment. Or you can direct to a specific page e.g. http://localhost:PORTNUM/static/html/consent.html
 - When pointing to an experiment from e.g. Prolific, MTURK, specify urlParams with http://localhost:PORTNUM/static/html/consent.html?WorkerId=test&... etc.
   - These need to be forwarded manually across webpages. 
+
+
 
 # Navigating the repo
 - `experiments/` contains the code for behavioral experiments.
