@@ -174,6 +174,21 @@ div.submitted-towers{
     padding: 6px 12px;
 }
 
+.color-btn {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 5px solid transparent;
+    margin: 10px;
+    cursor: pointer;
+    outline: none;
+}
+
+.color-btn.selected {
+    border: 5px solid black;
+}
+
+
 .button-row {
     justify-content: space-around;
 }
@@ -424,7 +439,6 @@ h5#trial-counter-center {
     font-size: medium;
     width: 450px;
 };
-
 
 .consent {
     text-align: left;

@@ -41,7 +41,7 @@ expConfig = {
     "trialTypes":{
       "build": "block-tower-building-undo",
       "view": "block-tower-viewing",
-      "buildRecall": "block-tower-build-recall",
+      "buildRecall": "block-tower-building-recall-choose-color",
     }
   }
   
