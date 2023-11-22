@@ -187,7 +187,7 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
 
     // html_content += '<p class="build-recall-prompt"></p>';
     // html_content += '<p id="block-counter">' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed</p>';
-    html_content += '<p class="build-recall-prompt">Build all the towers you remember from the previous part of the experiment. Each has tower has 8 blocks.</br></br>You can undo and redo blocks with the white arrow buttons, or press Reset to start building from scratch.</br></br>Once you have placed 8 blocks, press Submit to save your tower. You can submit up to 6 towers.</br>Press Exit when you can\'t remember any more towers.</p>';
+    html_content += '<p class="build-recall-prompt">Build the towers you remember from the previous part of the experiment. Select a color from the palette underneath the building window. You can submit one tower of each color.</br></br>Each tower has tower has 8 blocks. Once you have placed 8 blocks, press Submit to save your tower.  </br></br>Press "No more towers" when you can\'t remember any more towers.</p>';
 
     html_content += '</div>';
 
@@ -199,7 +199,7 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
     // html_content += '</div>';
 
     html_content += '<div class="row pt-1 button-row">';
-    html_content += '<button id="finish-button" type="button" class="btn btn-danger">Exit</button>';
+    html_content += '<button id="finish-button" type="button" class="btn btn-danger">No more towers</button>';
     html_content += '</div>';
 
     html_content += "</div>";
@@ -219,7 +219,9 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
       let timeNow = Date.now();
       trial.nBlocksPlaced -= 1;
       document.getElementById('block-counter').innerText = '' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed';
-      if (trial.nBlocksPlaced<trial.nBlocksMax){
+      if (trial.nBlocksPlaced==trial.nBlocksMax){
+        document.getElementById("submit-button").disabled = false;
+      } else {
         document.getElementById("submit-button").disabled = true;
       }
 
@@ -243,6 +245,8 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
       document.getElementById('block-counter').innerText = '' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed';
       if (trial.nBlocksPlaced==trial.nBlocksMax){
         document.getElementById("submit-button").disabled = false;
+      } else {
+        document.getElementById("submit-button").disabled = true;
       }
 
       trial.dataForwarder(
@@ -293,6 +297,13 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
       resetBuilding();
     });
 
+    $("#finish-button").click(() => {
+      jsPsych.endCurrentTimeline();
+      endTrial({
+        endReason : 'give-up'
+      });
+    });
+
     $("#undo-button").click(() => {
       undoredoManager.undo();
     });
@@ -308,7 +319,7 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
       trial.nBlocksPlaced = 0;
       document.getElementById('block-counter').innerText = '' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed';
 
-      if (trial.nBlocksPlaced<trial.nBlocksMax){
+      if (trial.nBlocksPlaced!=trial.nBlocksMax){
         document.getElementById("submit-button").disabled = true;
       }
 
@@ -330,10 +341,13 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
 
 
     function generateColorPicker(colors) {
+      console.log(colors);
       const container = document.getElementById("colorPicker");
       container.innerHTML = ""; // Clear existing buttons if any
 
-      for (let color of colors) {
+      for (let i = 0; i < colors.length; i++) {
+          let color = colors[i]
+
           let btn = document.createElement("button");
           btn.classList.add("color-btn");
           let rgbaString = `rgba(${color[0]},${color[1]},${color[2]},${color[3] / 255})`;
@@ -353,6 +367,14 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
               onColorSelected(color);
           });
 
+          // select first color as default
+          if (i == 0) {
+            // Mark the clicked button as selected
+            btn.classList.add("selected");
+            constructionTrial.towerColor = color;
+            resetBuilding();
+          }
+
           container.appendChild(btn);
       }
     }
@@ -370,7 +392,8 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
         resetBuilding();
     }
 
-    generateColorPicker(expConfig.experimentParameters.towerColors);
+    // generateColorPicker(expConfig.experimentParameters.towerColors);
+    generateColorPicker(expConfig.experimentParameters.remainingColors);
 
 
     function endTrial(trial_data) { // called by block_widget when trial ends
@@ -383,12 +406,16 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
 
       blockUniverse.disabledBlockPlacement = true;
 
+      // remove selected color from future color picker
+      expConfig.experimentParameters.remainingColors = _.filter(expConfig.experimentParameters.remainingColors, (color) => color != constructionTrial.towerColor);
+
       trial_data = _.extend(trial_data, trial.towerDetails, {
         trial_start_time: trial.trialStartTime,
         relative_time: Date.now() - trial.trialStartTime,
         // stimulus: trial.stimulus,
+        color: constructionTrial.towerColor,
         rep: trial.rep,
-        condition: trial.condition,
+        // condition: trial.condition,
         phase: trial.phase,
         fixation_duration: trial.fixationDuration,
         gap_duration: trial.gapDuration,
@@ -425,6 +452,8 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
         document.getElementById('block-counter').innerText = '' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed';
         if (trial.nBlocksPlaced==trial.nBlocksMax){
           document.getElementById("submit-button").disabled = false;
+        } else {
+          document.getElementById("submit-button").disabled = true;
         }
 
         if (trial.nBlocksPlaced >= trial.nBlocksMax) {
@@ -442,7 +471,7 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
             relative_time: Date.now() - trial.trialStartTime,
             datatype: 'block_placement',
             // stimulus: trial.stimulus,
-            condition: trial.condition,
+            // condition: trial.condition,
             n_block: trial.nBlocksPlaced,
             n_resets: trial.constructionTrial.nResets
         });
@@ -466,7 +495,7 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
             relative_time: timeNow - trial.trialStartTime,
             datatype: 'reset',
             // stimulus: trial.stimulus,
-            condition: trial.condition,
+            // condition: trial.condition,
             n_block: trial.nBlocksPlaced,
             n_resets: trial.constructionTrial.nResets
         });
@@ -542,4 +571,4 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
 //       this.events[name].splice(index, 1)
 //     }
 //   }
-// };
+// };/

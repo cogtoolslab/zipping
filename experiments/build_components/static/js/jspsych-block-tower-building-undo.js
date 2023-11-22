@@ -203,7 +203,8 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
           {
             absolute_time: timeNow,
             datatype: 'block_undo_placement',
-            relative_time: timeNow - trial.trialStartTime
+            relative_time: timeNow - trial.trialStartTime,
+            towerColor: trial.towerColor
           })
       );
     };
@@ -221,7 +222,8 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
           {
             absolute_time: timeNow,
             datatype: 'block_redo_placement',
-            relative_time: timeNow - trial.trialStartTime
+            relative_time: timeNow - trial.trialStartTime,
+            towerColor: trial.towerColor
           })
       );
     };
@@ -319,7 +321,8 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
         fixation_duration: trial.fixationDuration,
         gap_duration: trial.gapDuration,
         n_resets: trial.constructionTrial.nResets,
-        trial_num: trial.trialNum
+        trial_num: trial.trialNum,
+        towerColor: trial.towerColor
       });
 
       var env_divs = document.getElementsByClassName("env-div");
@@ -365,7 +368,8 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
             stimulus: trial.stimulus,
             condition: trial.condition,
             n_block: trial.nBlocksPlaced,
-            n_resets: trial.constructionTrial.nResets
+            n_resets: trial.constructionTrial.nResets,
+            towerColor: trial.towerColor
         });
 
         trial.dataForwarder(curr_data);
@@ -373,7 +377,7 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
 
     };
 
-    function resetSender(reset_data) { // called by block_widget when a block is placed
+    function resetSender(reset_data) { // called by block_widget when env is reset
 
       let timeNow = Date.now();
 
@@ -389,7 +393,8 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
             stimulus: trial.stimulus,
             condition: trial.condition,
             n_block: trial.nBlocksPlaced,
-            n_resets: trial.constructionTrial.nResets
+            n_resets: trial.constructionTrial.nResets,
+            towerColor: trial.towerColor
         });
 
         trial.dataForwarder(curr_data);

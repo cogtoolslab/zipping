@@ -19,6 +19,9 @@ function setupExperiment() {
 
     getStimListFromMongo();
 
+    expConfig.experimentParameters.towerColors = _.shuffle(expConfig.experimentParameters.towerColors);
+    expConfig.experimentParameters.remainingColors = expConfig.experimentParameters.towerColors ? _.cloneDeep(expConfig.experimentParameters.towerColors) : [];
+
     function getStimListFromMongo(config, callback) { //called in experiments where stimulus subsets are stored in mongo database
 
         socket.emit('getStim',
@@ -50,13 +53,13 @@ function setupExperiment() {
                 sendMetadata(metadata);
             }, 500);
 
-            // setupLearnPhase(trialList, trialList => {
+            setupLearnPhase(trialList, trialList => {
                 setupDecodePhase(trialList, trialList => {
                     setupOtherTrials(trialList);
                     console.log(trialList);
                 });
             });
-        // });
+        });
     };
 
     setupLearnPhase = function (trialList, callback){
@@ -197,6 +200,29 @@ function setupExperiment() {
         return(trial);
     };
 
+    metadatumToIndividualRecallTrial = function(metadatum) {
+        /**
+         * Augments trial information from metadatum with parameters in config
+         */
+
+        trialType = 'buildRecall';
+
+        // select plugin based on trialType
+        let trialPlugin = expConfig["trialTypes"][trialType];
+
+        // create trial and add parameters for trial type from config
+        let trial = _.extend({
+            type: trialPlugin,
+            individualRecallTrial: true,
+            trialType: trialType,
+            // condition: metadatum.condition,
+            inColor: true,
+            dataForwarder: () => forwardDataToMongo,
+        }, expConfig["taskParameters"][trialType]);
+
+        return(trial);
+    };
+
     createBuildRecallTrial = function(metadata) {
         /**
          * Creates a single building recall trial in which multiple towers can be built and submitted.
@@ -208,7 +234,7 @@ function setupExperiment() {
         let trialPlugin = expConfig["trialTypes"][trialType];
 
         // create trial and add parameters for trial type from config
-        let trial = _.extend({
+        let trial = _.extend({ // potential bugs here because no {}
             type: trialPlugin,
             trialType: trialType,
             dataForwarder: () => forwardDataToMongo,
@@ -232,13 +258,24 @@ function setupExperiment() {
          * Towers from all conditions.
          */
 
-        // selects buildRecall if exists, otherwise an oldnew. refactor with more robust conditional and config setup if more experiment setups needed
+        let decodeTrials;
+
+        // if config specificies a plugin for recall trials, use that plugin
         if (expConfig["trialTypes"]["buildRecall"]){
-            // DO NOT map over all trials, instead create one trial in which many towers can be submitted.
-            decodeTrials = [createBuildRecallTrial(metadata)];
             
-        } else {
-            // map over all trials
+            if (expConfig["trialTypes"]["buildRecall"] == "block-tower-building-recall-choose-color"){ // if we're creating a new trial for each structure:
+                // create recall trial for each presented stimulus
+                decodeTrials = _.map(_.filter(metadata.trials, (trial) => trial['condition'] != 'foil'), trialMetadatum => {
+                    return metadatumToIndividualRecallTrial(trialMetadatum);
+                });
+
+            } else {
+                // DO NOT map over all trials, instead create one trial in which many towers can be submitted
+                // used in build_components_build_recall_prolific_pilot_6_towers_2_rep and previous
+                decodeTrials = [createBuildRecallTrial(metadata)];
+            };
+            
+        } else { // otherwise create an old-new trial for each stimulus (pilot_2 and previous)
             decodeTrials = _.map(metadata.trials, trialMetadatum => {
                 return metadatumToOldNewTrial(trialMetadatum)
             });
@@ -260,7 +297,7 @@ function setupExperiment() {
 
         trialList = _.concat(trialList, 
                             decodePhaseInstructions,
-                            decodeTrials);
+                            {timeline: decodeTrials});
 
         // forward trial list to next setup function
         callback(trialList);

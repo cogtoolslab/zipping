@@ -57,16 +57,24 @@ Plugins:
 
 
 ## build_components_build_recall_prolific_pilot_6_towers_2_rep
+- config: experimentConfigBuildRetrieval.js
 - Same as above but 2 repetitions of each encoding trial
   - Added in rep functionality to experimentSetup
-- N=50 (i.e. 50 completed)
+- N=50 (i.e. 50 completed) on Prolific
 - Presented at VSS 2023
 
 
-
-
-## build_components_build_recall_6_towers_3_rep_color
+## build_components_build_recall_6_towers_3_rep_color_pilot_0
+- config: experimentConfigBuildRecallOld.js
 - Intended as replication of prior recall results but with stronger memories i.e. by assigning each stimulus a unique color and using 3 repetitions of each stimulus.
 - 3 reps
 - Each stimulus is assigned a unique color
+- n = 30 (25 completed) on SONA
+- BUG: Wasn't saving colors in learn trials so no way to match (could run the analysis from prev study but not the point)
+- FEEDBACK: A couple of participants explicitly said that they thought they only had to remmeber the LOOK towers >> Edit instructions for next version
+
+
+
+## build_components_build_recall_6_towers_3_rep_color_pilot_1
+- config: experimentConfigBuildRecall.js
 - 

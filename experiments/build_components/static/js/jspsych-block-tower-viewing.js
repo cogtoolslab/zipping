@@ -199,7 +199,8 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
           response_correct: trial.response_correct,
           // practice: trial.practice,
           // stimVersionInd: trial.stimVersionInd,
-          trial_num: trial.trialNum
+          trial_num: trial.trialNum,
+          towerColor: trial.towerColor
         }, trial.towerDetails);
   
         // clear the display
