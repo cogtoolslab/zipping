@@ -759,6 +759,11 @@ var getURLParams = function () {
   return urlParams;
 };
 
+function rgbaToHex(rgba) {
+  return '' + rgba.slice(0, 3).map(c => ('0' + c.toString(16)).slice(-2)).join('');
+}
+
+
 // var requestStimsFromMongo = function(config) {
 
 //   sendPostRequest('http://localhost:6021/db/getstims', {

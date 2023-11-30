@@ -172,7 +172,7 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
     html_content += '</div>';
 
     html_content += '<div class="col pt-3 text-right">';
-    html_content += '<h5 id="trial-counter-center">Tower '  + window.currTrialNum + ' of ' + window.totalEncodeTrials + '</h5>';
+    html_content += '<h5 id="trial-counter-center">Tower '  + trial.trialNum + ' of ' + window.totalEncodeTrials + '</h5>';
     html_content += '<div class="button-div-row">';
     html_content += '<button id="undo-button" type="button" title="undo" class="btn btn-light">↩</button>';
     html_content += '<button id="redo-button" type="button" title="redo" class="btn btn-light">↪</button>';

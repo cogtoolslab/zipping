@@ -77,4 +77,14 @@ Plugins:
 
 ## build_components_build_recall_6_towers_3_rep_color_pilot_1
 - config: experimentConfigBuildRecall.js
-- 
+
+
+## build_components_build_recall_wm
+- config: experimentConfigBuildRecallWM.js
+- sticking with 6 towers, 3 reps
+  - Build task is now a WM version: i.e. show tower, hide tower, build 
+    -   
+  - View task is now a match-to-sample task
+    - 
+- Same stimuli but with new distractors for match-to-sample task
+- Rather than create new plugins for WM version, I'm using the tower-viewing plugin as the exposure, then the immediately following study phase is a whole different "trial"

@@ -570,3 +570,13 @@ img.fixation{
 #mask{
     width: 400px;
 }
+
+/* Match to sample */
+
+.m2s-fixation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Optional: set a specific size for the image, if desired */
+  }
