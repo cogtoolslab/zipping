@@ -163,7 +163,7 @@ div.submitted-towers{
 }
 
 #practice-feedback{
-    color: red;
+    color: #cc4646;
 }
 
 .btn{
@@ -197,7 +197,7 @@ div.submitted-towers{
 
 
 .color-btn.selected {
-    border: 5px solid black;
+    border: 5px solid black; 
 }
 
 
@@ -580,3 +580,12 @@ img.fixation{
     transform: translate(-50%, -50%);
     /* Optional: set a specific size for the image, if desired */
   }
+
+.env-upper-text {
+    margin-top: 0px !important;
+
+}
+
+#build-buttons{
+    
+}

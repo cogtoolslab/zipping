@@ -59,7 +59,6 @@ function setupExperiment() {
             setupLearnPhase(trialList, trialList => {
                 setupDecodePhase(trialList, trialList => {
                     setupOtherTrials(trialList);
-                    console.log(trialList);
                 });
             });
         });
@@ -93,8 +92,6 @@ function setupExperiment() {
         encodeTrials = _.map(encodeTrialMetadata, trialMetadatum => {    
             return metadatumToLearningTrial(trialMetadatum);
         });
-
-        console.log('encodeTrials:', encodeTrials);
 
 
         nLearningReps = expConfig.experimentParameters.nLearningReps ? expConfig.experimentParameters.nLearningReps : 1;
@@ -134,13 +131,13 @@ function setupExperiment() {
         } while(longestSubsequence(_.map(reps, ( t ) => {return t['condition']})) > 2); // checks that no streaks longer than 2 across entire learn sequence
 
         // add phase instructions
-        learnPhaseInstructions = makeInstructions(expConfig['learnPhaseInstructions']);
+        learnPhaseInstructions = [makeInstructions(expConfig['learnPhaseInstructions'])];
 
         
 
         if (expConfig.experimentParameters.encodePreload){
 
-            console.log('images', imagesToPreload);
+            // console.log('images', imagesToPreload);
 
             var encodePreload = {
                 type: 'preload',
@@ -149,7 +146,7 @@ function setupExperiment() {
                 images : imagesToPreload
             };
 
-            trialList.push(encodePreload)
+            learnPhaseInstructions.push(encodePreload)
         }
 
 
@@ -174,11 +171,33 @@ function setupExperiment() {
 
     }
 
+    getDistractorPathsFromList = function(distractorKinds, metadatum) {
+        
+        // console.log(expConfig.experimentParameters.distractorPath);
+
+        paths = _.map(distractorKinds, distractorKind => {
+
+            return (expConfig.experimentParameters.distractorPath + metadatum.tower_id_tall + '_' + distractorKind + '_' + rgbaToHex(metadatum.towerColor) + '.png');
+
+        });
+
+        return paths
+
+    }
+
 
     getTargetPath = function(metadatum, trialType) {
 
         return (expConfig.taskParameters[trialType].distractorPath + metadatum.tower_id_tall + '_original_' + rgbaToHex(metadatum.towerColor) + '.png');
 
+    }
+
+    chooseFoilFromDistractors = function(distractorKinds) {
+
+        const foil = _.sample(distractorKinds);
+        const distractors = _.without(distractorKinds, foil);
+
+        return { 'foil': foil, 'distractors': distractors };
     }
 
 
@@ -206,7 +225,40 @@ function setupExperiment() {
             towerColor: metadatum.towerColor
         }, expConfig["taskParameters"][trialType]);
 
-        if (expConfig.taskParameters[trialType]['distractorKinds']) {
+
+        let splitDistractors;
+
+        // for each target tower, randomly choose a foil from the set of distractors
+        if (expConfig.experimentParameters.foilsFromDistractors){
+
+
+            splitDistractors = chooseFoilFromDistractors(expConfig.experimentParameters.distractorKinds);
+    
+            // TODO: do something with foil        
+            //splitDistractors.foil
+            // TODO CREATE OLD-NEW TRIALS THAT USE FOIL (FOIL IMAGE) AS TARGET
+
+
+            // if this is a match-to-sample trial, add the distractors
+            if (expConfig.taskParameters[trialType]['distractorSubset']) {
+                // setup distractors for m2s trials
+
+                let distractors = getDistractorPathsFromList(splitDistractors.distractors, metadatum);
+                imagesToPreload = _.concat(imagesToPreload, distractors);
+
+                let target = getTargetPath(metadatum, trialType);
+                imagesToPreload.push(target);
+
+                _.extend(studyTrial, 
+                    {
+                        distractors : distractors,
+                        distractorKinds : splitDistractors.distractors, // for easy data forwarding
+                        leftOutFoil : splitDistractors.foil,
+                        target : target
+                    }
+                    )
+            }
+        } else if (expConfig.taskParameters[trialType]['distractorKinds']) {
 
             let distractors = getDistractorPaths(metadatum, trialType);
             imagesToPreload = _.concat(imagesToPreload, distractors);
