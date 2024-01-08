@@ -15,9 +15,16 @@ function setupExperiment() {
     const gameID = UUID();
 
     var metadata;
-    var trialNumCounter = 0; //
+    var localFoils = [];
+    var trialNumCounter = 0; 
 
     getStimListFromMongo();
+
+    expConfig.experimentParameters.towerColors = _.shuffle(expConfig.experimentParameters.towerColors);
+    expConfig.experimentParameters.remainingColors = expConfig.experimentParameters.towerColors ? _.cloneDeep(expConfig.experimentParameters.towerColors) : [];
+
+
+    var imagesToPreload = [];
 
     function getStimListFromMongo(config, callback) { //called in experiments where stimulus subsets are stored in mongo database
 
@@ -53,7 +60,6 @@ function setupExperiment() {
             setupLearnPhase(trialList, trialList => {
                 setupDecodePhase(trialList, trialList => {
                     setupOtherTrials(trialList);
-                    console.log(trialList);
                 });
             });
         });
@@ -88,14 +94,14 @@ function setupExperiment() {
             return metadatumToLearningTrial(trialMetadatum);
         });
 
-        console.log('encodeTrials:', encodeTrials);
-
 
         nLearningReps = expConfig.experimentParameters.nLearningReps ? expConfig.experimentParameters.nLearningReps : 1;
 
         let reps = [];
         do {
             reps = [];
+
+            trialNumCounter = 0;
 
             for (let rep = 1; rep <= nLearningReps; rep++) {
                 // randomize order learning trials
@@ -109,15 +115,41 @@ function setupExperiment() {
 
                 localEncodeTrials.forEach(trial => {
                     trialNumCounter += 1;
-                    trial['trialNum'] = trialNumCounter;
-                    trial['rep'] = rep;
+
+                    if(expConfig.experimentParameters.workingMemoryVersion){
+                        trial.timeline[0]['trialNum'] = trialNumCounter;
+                        trial.timeline[0]['rep'] = rep;
+                        trial.timeline[1]['trialNum'] = trialNumCounter;
+                        trial.timeline[1]['rep'] = rep;
+                    } else {
+                        trial['trialNum'] = trialNumCounter;
+                        trial['rep'] = rep;
+                    }
+                   
                     reps.push(trial);
                 });
             };
         } while(longestSubsequence(_.map(reps, ( t ) => {return t['condition']})) > 2); // checks that no streaks longer than 2 across entire learn sequence
 
         // add phase instructions
-        learnPhaseInstructions = makeInstructions(expConfig['learnPhaseInstructions']);
+        learnPhaseInstructions = [makeInstructions(expConfig['learnPhaseInstructions'])];
+
+        
+
+        if (expConfig.experimentParameters.encodePreload){
+
+            // console.log('images', imagesToPreload);
+
+            var encodePreload = {
+                type: 'preload',
+                auto_preload: true,
+                trials: [reps],
+                images : imagesToPreload
+            };
+
+            learnPhaseInstructions.push(encodePreload)
+        }
+
 
         // append learning trials to (empty) trialList
         trialList = _.concat(trialList,
@@ -127,6 +159,54 @@ function setupExperiment() {
         // forward trial list to next setup function
         callback(trialList);
     };
+
+    getDistractorPaths = function(metadatum, trialType) {
+
+        paths = _.map(expConfig.taskParameters[trialType].distractorKinds, distractorKind => {
+
+            return (expConfig.taskParameters[trialType].distractorPath + metadatum.tower_id_tall + '_' + distractorKind + '_' + rgbaToHex(metadatum.towerColor) + '.png');
+
+        });
+
+        return paths
+
+    }
+
+    getDistractorPathsFromList = function(distractorKinds, metadatum) {
+        
+        // console.log(expConfig.experimentParameters.distractorPath);
+
+        paths = _.map(distractorKinds, distractorKind => {
+
+            return (expConfig.experimentParameters.distractorPath + metadatum.tower_id_tall + '_' + distractorKind + '_' + rgbaToHex(metadatum.towerColor) + '.png');
+
+        });
+
+        return paths
+
+    }
+
+    getStimPath = function(distractorKind, targetSourceID, towerColor) {
+
+        return (expConfig.experimentParameters.distractorPath + targetSourceID + '_' + distractorKind + '_' + rgbaToHex(towerColor) + '.png');
+
+    }
+
+
+    getTargetPath = function(metadatum, trialType) {
+
+        return (expConfig.taskParameters[trialType].distractorPath + metadatum.tower_id_tall + '_original_' + rgbaToHex(metadatum.towerColor) + '.png');
+
+    }
+
+    chooseFoilFromDistractors = function(distractorKinds) {
+
+        const foil = _.sample(distractorKinds);
+        const distractors = _.without(distractorKinds, foil);
+
+        return { 'foil': foil, 'distractors': distractors };
+    }
+
 
     metadatumToLearningTrial = function(metadatum) {
         /**
@@ -140,7 +220,7 @@ function setupExperiment() {
         let trialPlugin = expConfig["trialTypes"][trialType];
 
         // create trial and add parameters for trial type from config
-        let trial = _.extend({
+        let studyTrial = _.extend({
             type: trialPlugin,
             trialType: trialType,
             condition: metadatum.condition,
@@ -152,7 +232,91 @@ function setupExperiment() {
             towerColor: metadatum.towerColor
         }, expConfig["taskParameters"][trialType]);
 
-        return(trial);
+
+        let splitDistractors;
+
+        // for each target tower, randomly choose a foil from the set of distractors
+        if (expConfig.experimentParameters.foilsFromDistractors){
+
+            splitDistractors = chooseFoilFromDistractors(expConfig.experimentParameters.distractorKinds);
+    
+
+            // CREATE OLD-NEW TRIALS THAT USE FOIL (FOIL IMAGE) AS TARGET
+            localFoils.push({
+                condition : "foil",
+                distractorKind: splitDistractors.foil,
+                assignment_number: metadatum.assignment_number, // metadatum is for the target trial associated with this distractor
+                associatedTargetDetails : getTowerDetails(metadatum),
+                towerColor: metadatum.towerColor,
+                colorCondition : metadatum.condition
+            });
+
+            // if this is a match-to-sample trial, add the distractors
+            if (expConfig.taskParameters[trialType]['distractorSubset']) {
+                // setup distractors for m2s trials
+
+                let distractors = getDistractorPathsFromList(splitDistractors.distractors, metadatum);
+                imagesToPreload = _.concat(imagesToPreload, distractors);
+
+                let target = getTargetPath(metadatum, trialType);
+                imagesToPreload.push(target);
+
+                _.extend(studyTrial, 
+                    {
+                        distractors : distractors,
+                        distractorKinds : splitDistractors.distractors, // for easy data forwarding
+                        leftOutFoil : splitDistractors.foil,
+                        target : target
+                    }
+                    )
+            }
+        } else if (expConfig.taskParameters[trialType]['distractorKinds']) {
+
+            splitDistractors = chooseFoilFromDistractors(expConfig.experimentParameters.distractorKinds);
+
+            // let distractors = getDistractorPaths(metadatum, trialType);
+            // imagesToPreload = _.concat(imagesToPreload, distractors);
+
+            let distractors = getDistractorPathsFromList(splitDistractors.distractors, metadatum);
+                imagesToPreload = _.concat(imagesToPreload, distractors);
+
+                let target = getTargetPath(metadatum, trialType);
+                imagesToPreload.push(target);
+
+            _.extend(studyTrial, 
+                {
+                    distractors : distractors,
+                    distractorKinds : splitDistractors.distractors, // for easy data forwarding
+                    leftOutFoil : splitDistractors.foil,
+                    target : target
+                }
+                )
+        }
+
+        let trialContainer = {timeline : [], 
+                             condition: metadatum.condition // specify condition to help with psuedo-randomization
+                            };
+
+        if (expConfig.experimentParameters.workingMemoryVersion){
+            // create exposure trial
+            let exposureTrial = _.extend({
+                type: "block-tower-viewing",
+                trialType: metadatum.condition,
+                condition: metadatum.condition,
+                towerDetails: getTowerDetails(metadatum),
+                dataForwarder: () => forwardDataToMongo,
+                stimulus: {'blocks': metadatum.stim_tall},
+                offset: 4,
+                towerColor: metadatum.towerColor
+            }, expConfig["taskParameters"]["exposure"]);
+
+            trialContainer.timeline.push(exposureTrial);
+                        
+        }
+
+        trialContainer.timeline.push(studyTrial);
+
+        return(trialContainer);
     };
 
     getTowerDetails = function(metadatum){
@@ -179,19 +343,50 @@ function setupExperiment() {
         // select plugin based on trialType
         let trialPlugin = expConfig["trialTypes"][trialType];
 
+        console.log(metadatum);
+        let stimKind = metadatum.condition == 'foil' ? metadatum.distractorKind : 'original';
+        let targetSource = metadatum.condition == 'foil' ? metadatum.associatedTargetDetails.tower_id_tall : metadatum.tower_id_tall;
+        let stimPath = getStimPath(stimKind, targetSource, metadatum.towerColor); // distractorKind, targetSourceID, towerColor
+
         // create trial and add parameters for trial type from config
         let trial = _.extend({
             type: trialPlugin,
             trialType: trialType,
             condition: metadatum.condition,
+            colorCondition: metadatum.colorCondition ? metadatum.colorCondition: metadatum.condition,
             novelty: metadatum.condition == 'foil' ? 'new' : 'old',
-            stimulus: {'blocks': metadatum.stim_tall},
+            stimulus: trialPlugin == "block-tower-old-new-img" ? stimPath :  {'blocks': metadatum.stim_tall},
+            distractorKind: metadatum.distractorKind,
             towerDetails: getTowerDetails(metadatum),
+            associatedTargetDetails: metadatum.associatedTargetDetails ? metadatum.associatedTargetDetails : getTowerDetails(metadatum),
             assignment_number : metadatum.assignment_number,
             offset: 4,
             new_key: metadata.response_key_dict['new'],
             old_key: metadata.response_key_dict['old'],
             choices: [metadata.response_key_dict['new'], metadata.response_key_dict['old']]
+        }, expConfig["taskParameters"][trialType]);
+
+        return(trial);
+    };
+
+    metadatumToIndividualRecallTrial = function(metadatum) {
+        /**
+         * Augments trial information from metadatum with parameters in config
+         */
+
+        trialType = 'buildRecall';
+
+        // select plugin based on trialType
+        let trialPlugin = expConfig["trialTypes"][trialType];
+
+        // create trial and add parameters for trial type from config
+        let trial = _.extend({
+            type: trialPlugin,
+            individualRecallTrial: true,
+            trialType: trialType,
+            // condition: metadatum.condition,
+            inColor: true,
+            dataForwarder: () => forwardDataToMongo,
         }, expConfig["taskParameters"][trialType]);
 
         return(trial);
@@ -208,7 +403,7 @@ function setupExperiment() {
         let trialPlugin = expConfig["trialTypes"][trialType];
 
         // create trial and add parameters for trial type from config
-        let trial = _.extend({
+        let trial = _.extend({ // potential bugs here because no {}
             type: trialPlugin,
             trialType: trialType,
             dataForwarder: () => forwardDataToMongo,
@@ -232,13 +427,35 @@ function setupExperiment() {
          * Towers from all conditions.
          */
 
-        // selects buildRecall if exists, otherwise an oldnew. refactor with more robust conditional and config setup if more experiment setups needed
+        let decodeTrials;
+
+        // if config specificies a plugin for recall trials, use that plugin
         if (expConfig["trialTypes"]["buildRecall"]){
-            // DO NOT map over all trials, instead create one trial in which many towers can be submitted.
-            decodeTrials = [createBuildRecallTrial(metadata)];
             
-        } else {
-            // map over all trials
+            if (expConfig["trialTypes"]["buildRecall"] == "block-tower-building-recall-choose-color"){ // if we're creating a new trial for each structure:
+                // create recall trial for each presented stimulus
+                decodeTrials = _.map(_.filter(metadata.trials, (trial) => trial['condition'] != 'foil'), trialMetadatum => {
+                    return metadatumToIndividualRecallTrial(trialMetadatum);
+                });
+
+            } else {
+                // DO NOT map over all trials, instead create one trial in which many towers can be submitted
+                // used in build_components_build_recall_prolific_pilot_6_towers_2_rep and previous
+                decodeTrials = [createBuildRecallTrial(metadata)];
+            };
+            
+        } else if (expConfig["experimentParameters"]["foilsFromDistractors"] ) {
+
+            targetsPlusFoils = _.concat(metadata.trials, localFoils);
+
+            console.log('targs n foils', targetsPlusFoils);
+
+
+            decodeTrials = _.map(targetsPlusFoils, trialMetadatum => {
+                return metadatumToOldNewTrial(trialMetadatum) // TODO swap out/ parameterize for old-new-img
+            });
+
+        } else { // otherwise create an old-new trial for each stimulus (pilot_2 and previous)
             decodeTrials = _.map(metadata.trials, trialMetadatum => {
                 return metadatumToOldNewTrial(trialMetadatum)
             });
@@ -250,19 +467,41 @@ function setupExperiment() {
 
         decodeTrials = _.shuffle(decodeTrials);
 
+        let decodeTrialNum = 0;
         decodeTrials.forEach(trial => {
             trialNumCounter += 1;
             trial.trialNum = trialNumCounter;
+
+            decodeTrialNum += 1;
+            trial.decodeTrialNum = decodeTrialNum
         });
+        window.totalDecodeTrials = decodeTrialNum;
 
         // add phase instructions
         decodePhaseInstructions = makeInstructions(_.map(expConfig['decodePhaseInstructions'], mapKeys));
 
-        trialList = _.concat(trialList, 
-                            decodePhaseInstructions,
-                            decodeTrials);
+        
+
+        if (expConfig.experimentParameters.decodePreload){
+
+            // console.log('images', imagesToPreload);
+
+            var decodePreload = {
+                type: 'preload',
+                auto_preload: true,
+                trials: decodeTrials,
+                images : imagesToPreload
+            };
+
+            trialList = _.concat(trialList, [decodePreload]);
+        }
+
+        trialList = _.concat(trialList,
+            decodePhaseInstructions,
+            {timeline: decodeTrials});
 
         // forward trial list to next setup function
+
         callback(trialList);
     };
 
@@ -375,7 +614,7 @@ function setupExperiment() {
 
         /* #### Initialize jsPsych with complete experimental timeline #### */
         jsPsych.init({
-            timeline: trialList,
+            timeline: trialList, // trialList.slice(-2),
             show_progress_bar: false,
             default_iti: 600, //up from 600 in zipping_calibration_sona_pilot
             on_trial_finish: function (trialData) {

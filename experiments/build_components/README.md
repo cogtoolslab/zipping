@@ -57,16 +57,41 @@ Plugins:
 
 
 ## build_components_build_recall_prolific_pilot_6_towers_2_rep
+- config: experimentConfigBuildRetrieval.js
 - Same as above but 2 repetitions of each encoding trial
   - Added in rep functionality to experimentSetup
-- N=50 (i.e. 50 completed)
+- N=50 (i.e. 50 completed) on Prolific
 - Presented at VSS 2023
 
 
-
-
-## build_components_build_recall_6_towers_3_rep_color
+## build_components_build_recall_6_towers_3_rep_color_pilot_0
+- config: experimentConfigBuildRecallOld.js
 - Intended as replication of prior recall results but with stronger memories i.e. by assigning each stimulus a unique color and using 3 repetitions of each stimulus.
 - 3 reps
 - Each stimulus is assigned a unique color
-- 
+- n = 30 (25 completed) on SONA
+- BUG: Wasn't saving colors in learn trials so no way to match (could run the analysis from prev study but not the point)
+- FEEDBACK: A couple of participants explicitly said that they thought they only had to remmeber the LOOK towers >> Edit instructions for next version
+
+
+
+## build_components_build_recall_6_towers_3_rep_color_pilot_1
+- config: experimentConfigBuildRecall.js
+
+
+Issue with iteration names here- see below
+## build_components_build_recall_6_towers_3_rep_color_sona_pilot_1_datatest (aka build_components_build_recall_6_towers_3_rep_color_sona_2)
+- config: experimentConfigBuildRecall.js
+- changed instructions to push people away from thinking that they were only meant to 'study' in the view task 
+- ran on SONA (unfortunately forgot to change this iterationName before making a new version of the experiment, so it will take some cleaning up front. Start by finding the ones with workerID, which should be short because they're from SONA. I also think studyLocation is being saved which will help).
+
+
+## build_components_build_recall_wm
+- config: experimentConfigBuildRecallWM.js
+- sticking with 6 towers, 3 reps
+  - Build task is now a WM version: i.e. show tower, hide tower, build 
+    -   
+  - View task is now a match-to-sample task
+    - 
+- Same stimuli but with new distractors for match-to-sample task
+- Rather than create new plugins for WM version, I'm using the tower-viewing plugin as the exposure, then the immediately following study phase is a whole different "trial"

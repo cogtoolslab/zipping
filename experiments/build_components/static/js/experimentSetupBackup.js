@@ -1,4 +1,5 @@
-/** experimentSetup.js | Credit : WPM, YF, CW.
+/** experimentSetup.js | BACKED UP AFTER VSS EXPERIMENTS.
+ * 
  * Sets up experiments from a config. Serving tihs expects a config with the following URL parameters:
   - configId: the name of the config file for the experiment.
   - experimentGroup: the name of the subdirectory containing the configs.

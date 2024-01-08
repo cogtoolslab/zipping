@@ -1,5 +1,5 @@
 /*
- * Displays a tower stimulus and moves on when perfectly reconstructed.
+ * Prompts user to build and submit a tower stimulus (displayed in preceding tower-viewing trial) and displays actual stimulus as feedback on submission.
  *
  * Requirements for towers domain.
  *  block Display widget (i.e. import blockConfig.js and blockDisplay.js above this plugin in html)
@@ -9,7 +9,7 @@
 
 var DEFAULT_IMAGE_SIZE = 200;
 
-jsPsych.plugins["block-tower-building-undo"] = (function () {
+jsPsych.plugins["block-tower-building-undo-nostim"] = (function () {
   var plugin = {};
 
   // jsPsych.pluginAPI.registerPreload('block-construction', 'stimulus', 'image');
@@ -44,7 +44,7 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
       },
       prompt:{
         type: jsPsych.plugins.parameterType.STRING,
-        default: "",
+        default: "BUILD",
       },
       rep: {
         type: jsPsych.plugins.parameterType.INT,
@@ -106,6 +106,9 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
   };
 
   plugin.trial = function (display_element, trial) {
+
+    trial.nBlocksPlaced = 0;
+    trial.finished = false;
 
     const undoredoManager = new UndoRedoManager();
 
@@ -171,33 +174,48 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
 
     /** Create domain canvas **/
     html_content += '<div class="row pt-1 env-row">';
-    if (trial.showStimulus){
-      html_content += '<div class="col env-div" id="stimulus-canvas"></div>';
-    };
-    html_content += '<div class=" col env-div" id="environment-canvas"></div>';
+    // if (trial.showStimulus){
+      html_content += '<div class="col env-div" id="stimulus-canvas" style="display: none; padding-top: 10px"><p class="env-upper-text">actual tower</p></div>';
+    // };
+    html_content += '<div class=" col env-div" id="environment-canvas" style="padding-top: 10px"><p class="env-upper-text" id="block-counter">' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed</p></div>';
+    // html_content += '<p id="block-counter" style="margin-top: 10px">' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed</p>';
     html_content += '</div>';
+    
+    // html_content += '<div class=" col env-div env-flex" id="environment-canvas" style="flex-basis: 0; margin: auto"><p id="block-counter" style="margin-top: 10px">' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed</p>';
+
 
     html_content += '<div class="col pt-3 text-right">';
-    html_content += '<h5 id="trial-counter-center">Tower '  + trial.trialNum + ' of ' + window.totalEncodeTrials + '</h5>';
-    html_content += '<div class="button-div-row">';
+    // html_content += '<h5 id="trial-counter-center">Tower '  + trial.trialNum + ' of ' + window.totalEncodeTrials + '</h5>';
+    html_content += '<div class="button-div-row" id="build-buttons" style="display: block">';
     html_content += '<button id="undo-button" type="button" title="undo" class="btn btn-light">↩</button>';
     html_content += '<button id="redo-button" type="button" title="redo" class="btn btn-light">↪</button>';
-    html_content += '<button id="reset-button" type="button" class="btn btn-primary">Reset</button>';
+    html_content += '<button id="reset-button" type="button" class="btn btn-warning">Reset</button>';
+    html_content += '<button id="submit-button" type="button" class="btn btn-primary" disabled=true>Submit</button>';
     html_content += '</div>'
     html_content += '</div>';
 
     html_content += "</div>";
-    html_content += '<p>Use ctrl/cmd + minus-sign (-) if windows do not fit on the screen at the same time.</p>';
+    // html_content += '<p>Use ctrl/cmd + minus-sign (-) if windows do not fit on the screen at the same time.</p>';
 
     display_element.innerHTML = html_content;
+
     document.getElementById("reset-button").disabled = false;
 
     trial.finished = false;
 
     let handleUndo = function (blockData) {
 
+      console.log('undo handled');
+      console.log('undo from:', trial.trialNum);
+
       let timeNow = Date.now();
       trial.nBlocksPlaced -= 1;
+      document.getElementById('block-counter').innerText = '' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed';
+      if (trial.nBlocksPlaced==trial.nBlocksMax){
+        document.getElementById("submit-button").disabled = false;
+      } else {
+        document.getElementById("submit-button").disabled = true;
+      }
 
       trial.dataForwarder(
         _.extend(
@@ -206,8 +224,7 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
           {
             absolute_time: timeNow,
             datatype: 'block_undo_placement',
-            relative_time: timeNow - trial.trialStartTime,
-            towerColor: trial.towerColor
+            relative_time: timeNow - trial.trialStartTime
           })
       );
     };
@@ -217,6 +234,12 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
 
       let timeNow = Date.now();
       trial.nBlocksPlaced += 1;
+      document.getElementById('block-counter').innerText = '' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed';
+      if (trial.nBlocksPlaced==trial.nBlocksMax){
+        document.getElementById("submit-button").disabled = false;
+      } else {
+        document.getElementById("submit-button").disabled = true;
+      }
 
       trial.dataForwarder(
         _.extend(
@@ -225,8 +248,7 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
           {
             absolute_time: timeNow,
             datatype: 'block_redo_placement',
-            relative_time: timeNow - trial.trialStartTime,
-            towerColor: trial.towerColor
+            relative_time: timeNow - trial.trialStartTime
           })
       );
     };
@@ -246,7 +268,8 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
 
       let constructionTrial = {
         stimulus: trial.stimulus.blocks,
-        endCondition: 'perfect-reconstruction-translation',
+        // endCondition: 'perfect-reconstruction-translation',
+        endCondition: 'submit-pressed',
         blocksPlaced: 0,
         nResets: -1, // start minus one as reset env at beginning of new trial
         //nBlocksMax: trial.nBlocksMax,
@@ -254,7 +277,7 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
         blockSender: blockSender,
         resetSender: resetSender,
         endBuildingTrial: endTrial,
-        towerColor: trial.towerColor // overrides config if not null
+        towerColor: trial.towerColor, // overrides config if not null
       };
 
       trial.constructionTrial = constructionTrial;
@@ -278,11 +301,16 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
         undoredoManager.redo();
       });
 
+      $("#submit-button").click(() => {
+        blockUniverse.endBuilding();
+      });
+
       resetBuilding = function () {
         undoredoManager.redostack = [];
         let nBlocksWhenReset = trial.nBlocksPlaced;
         constructionTrial.nResets += 1;
         trial.nBlocksPlaced = 0;
+        document.getElementById('block-counter').innerText = '' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed';
         resetSender({
           n_blocks_when_reset: nBlocksWhenReset,
         });
@@ -329,9 +357,16 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
       });
 
       var env_divs = document.getElementsByClassName("env-div");
+
+      correctReconstruction = blockUniverse.feedback("side-by-side");
+      document.getElementById('block-counter').innerText = "your tower";
+      document.getElementById('stimulus-canvas').style.display = "block";
+      document.getElementById('build-buttons').style.display = "none";
+
       Array.prototype.forEach.call(env_divs, env_div => {
-        env_div.style.backgroundColor = "#58CF76";
+        env_div.style.backgroundColor = correctReconstruction ? "#58CF76" : '#cc4646';
       });
+
       trial.finished = true;
 
       // window.blockUniverse.blockMenu.blockKinds = [];
@@ -346,13 +381,21 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
 
     };
 
+
     function blockSender(block_data) { // called by block_widget when a block is placed
 
       undoredoManager.redostack = [];
 
+
       if (!trial.finished){
         //console.log(block_data);
         trial.nBlocksPlaced += 1;
+        document.getElementById('block-counter').innerText = '' + trial.nBlocksPlaced + ' of ' + trial.nBlocksMax + ' blocks placed';
+        if (trial.nBlocksPlaced==trial.nBlocksMax){
+          document.getElementById("submit-button").disabled = false;
+        } else {
+          document.getElementById("submit-button").disabled = true;
+        }
 
         if (trial.nBlocksPlaced >= trial.nBlocksMax) {
           // update block counter element
@@ -368,17 +411,51 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
             trial_start_time: trial.trialStartTime,
             relative_time: Date.now() - trial.trialStartTime,
             datatype: 'block_placement',
-            stimulus: trial.stimulus,
-            condition: trial.condition,
+            // stimulus: trial.stimulus,
+            // condition: trial.condition,
             n_block: trial.nBlocksPlaced,
-            n_resets: trial.constructionTrial.nResets,
-            towerColor: trial.towerColor
+            n_resets: trial.constructionTrial.nResets
         });
 
         trial.dataForwarder(curr_data);
       };
 
     };
+    
+
+    // function blockSender(block_data) { // called by block_widget when a block is placed
+
+    //   undoredoManager.redostack = [];
+
+    //   if (!trial.finished){
+    //     //console.log(block_data);
+    //     trial.nBlocksPlaced += 1;
+
+    //     if (trial.nBlocksPlaced >= trial.nBlocksMax) {
+    //       // update block counter element
+
+    //       // setTimeout(resetBuilding, 300); 
+    //       // resetBuilding();
+    //     }
+
+    //     curr_data = _.extend(
+    //       block_data, 
+    //       trial.towerDetails, 
+    //       {
+    //         trial_start_time: trial.trialStartTime,
+    //         relative_time: Date.now() - trial.trialStartTime,
+    //         datatype: 'block_placement',
+    //         stimulus: trial.stimulus,
+    //         condition: trial.condition,
+    //         n_block: trial.nBlocksPlaced,
+    //         n_resets: trial.constructionTrial.nResets,
+    //         towerColor: trial.towerColor
+    //     });
+
+    //     trial.dataForwarder(curr_data);
+    //   };
+
+    // };
 
     function resetSender(reset_data) { // called by block_widget when env is reset
 

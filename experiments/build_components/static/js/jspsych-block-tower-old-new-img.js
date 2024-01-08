@@ -9,13 +9,13 @@
 
 var DEFAULT_IMAGE_SIZE = 200;
 
-jsPsych.plugins["block-tower-viewing"] = (function () {
+jsPsych.plugins["block-tower-old-new-img"] = (function () {
   var plugin = {};
 
   // jsPsych.pluginAPI.registerPreload('block-construction', 'stimulus', 'image');
 
   plugin.info = {
-    name: "block-tower-viewing",
+    name: "block-tower-old-new",
     parameters: {
       domain: {
         type: jsPsych.plugins.parameterType.STRING, // Domain to display.
@@ -34,6 +34,14 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
         type: jsPsych.plugins.parameterType.STRING,
         default: "None",
       },
+      condition: {
+        type: jsPsych.plugins.parameterType.STRING,
+        default: "None provided",
+      },
+      novelty: {
+        type: jsPsych.plugins.parameterType.STRING,
+        default: "None provided",
+      },
       prompt:{
         type: jsPsych.plugins.parameterType.STRING,
         default: "",
@@ -41,6 +49,10 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
       rep: {
         type: jsPsych.plugins.parameterType.INT,
         default: 0
+      },
+      targetSize: {
+        type: jsPsych.plugins.parameterType.INT,
+        default: 200
       },
       offset: {
         type: jsPsych.plugins.parameterType.INT,
@@ -72,6 +84,26 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
         pretty_name: "Function to call that forwards data to database (or otherwise)",
         default: (data) => console.log(data),
       },
+      new_key: {
+        type: jsPsych.plugins.parameterType.KEY,
+        array: true,
+        pretty_name: 'New Key',
+        default: 'm',
+        description: 'The key the subject should press if this is a new trial.'
+      },
+      old_key: {
+        type: jsPsych.plugins.parameterType.KEY,
+        array: true,
+        pretty_name: 'Old key',
+        default: 'z',
+        description: 'The key the subject should press if this is an old trial.'
+      },
+      choices : {
+        type: jsPsych.plugins.parameterType.OBJECT,
+        pretty_name: 'Valid choices for keypress',
+        default: [],
+        description: 'Valid choices for keypress.'
+      },
       response_ends_trial: {
         type: jsPsych.plugins.parameterType.BOOL,
         pretty_name: 'Response ends trial',
@@ -82,12 +114,6 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
         type: jsPsych.plugins.parameterType.OBJECT,
         pretty_name: "Additional tower informatiom to append to data",
         default: {},
-      },
-      towerDuration: {
-        type: jsPsych.plugins.parameterType.INT,
-        pretty_name: 'Time tower is displayed for',
-        default: 1000,
-        description: 'Time (ms) tower is displayed for.'
       },
       iti: {
         type: jsPsych.plugins.parameterType.INT,
@@ -100,40 +126,43 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
         pretty_name: 'Trial Number',
         default: 0,
         description: 'Externally assigned trial number.'
-      },
-      towerColor: {
-        type: jsPsych.plugins.parameterType.OBJECT,
-        pretty_name: "Color to display blocks",
-        default: null,
       }
     },
   };
 
   plugin.trial = function (display_element, trial) {
 
-    window.currTrialNum += 1;
-    // console.log('trial num', window.currTrialNum);
+    // trial number handling
+    window.recallTrialNum += 1;
+
+
 
     display_element.innerHTML = "";
-
+    
     var html_content = "";
-
-    // show preamble text
 
     html_content += '<h1 id="prompt">'+trial.prompt+'</h1>';
     
     html_content += '<div class="container" id="experiment">';
 
     /** Create domain canvas **/
-    html_content += '<div class="row pt-1 env-row">';
-    html_content += '<div class="col env-div" id="stimulus-canvas"></div>';
+    html_content += '<div class="row pt-1 env-row old-new-img-container">';
+    // html_content += '<div class="col env-div" id="stimulus-canvas"></div>';
     // html_content += '<div class=" col env-div" id="environment-canvas"></div>';
+    html_content +="<img id='stimulus-img' src='"+trial.stimulus+"' style='width: "+ trial.targetSize +"px'></img>";
     html_content += '</div>';
 
     html_content += '<div class="col pt-3 text-right">';
-    html_content += '<h5 id="trial-counter-center">Tower ' + trial.trialNum + ' of ' + window.totalEncodeTrials +'</h5>';
+    html_content += '<h5 id="trial-counter-center">Tower ' + trial.decodeTrialNum + ' of ' + window.totalDecodeTrials +'</h5>';
     // html_content += '<button id="reset-button" type="button" class="btn btn-primary">Reset</button>';
     html_content += '</div>';
+
+    html_content += '<div id="key-reminders">'
+    html_content += '<img src="../img/z_grey.png" class="key-reminder" id="z-reminder">'
+    html_content += '<img src="../img/m_grey.png" class="key-reminder" id="m-reminder">'
+    html_content += '<p class="response_side" id="new-text">new</p>' //✔
+    html_content += '<p class="response_side" id="old-text">old</p>' //✖
+    html_content += '</div>'
 
     html_content += "</div>";
     // html_content += '<p>Use ctrl/cmd + minus-sign (-) if windows do not fit on the screen at the same time.</p>';
@@ -148,6 +177,16 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
 
     trial.finished = false;
 
+    // key presses
+    var keyPresses = 0;
+    let incrementKeyPresses = function(event) {
+      if(event.key == 'm' || event.key == 'z'){
+        keyPresses += 1;
+      };
+    }
+
+    document.addEventListener('keydown', incrementKeyPresses);
+
     if (trial.stimulus !== null) {
 
       trial.trialStartTime = Date.now();
@@ -159,26 +198,28 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
       //     { 'x': 0, 'y': 1, 'height': 2, 'width': 1 },
       //     { 'x': 1, 'y': 2, 'height': 1, 'width': 2 }]};
 
-      let constructionTrial = {
-        stimulus: trial.stimulus.blocks,
-        // endCondition: 'perfect-reconstruction-translation',
-        blocksPlaced: 0,
-        nResets: -1, // start minus one as reset env at beginning of new trial
-        //nBlocksMax: trial.nBlocksMax,
-        offset: trial.offset,
-        towerColor: trial.towerColor // overrides config if not null
-        // blockSender: blockSender,
-        // endBuildingTrial: endTrial
-      };
+      // setup building environment for block display
+      // let blockDisplay = {
+      //   stimulus: trial.stimulus.blocks,
+      //   blocksPlaced: 0,
+      //   nResets: -1, // start minus one as reset env at beginning of new trial
+      //   offset: trial.offset,
+      // };
+      // trial.blockDisplay = blockDisplay;
+      // var showStimulus = true;
+      // var showBuilding = false;
+      // blockSetup(blockDisplay, showStimulus, showBuilding);
+    
+      new_side = trial.new_key == 'z' ? "left" : "right";
+      old_side = trial.old_key == 'z' ? "left" : "right";
+      $('#new-text').addClass(new_side+"-emoji-text");
+      $('#old-text').addClass(old_side+"-emoji-text");
+      
+      // TODO: display as image
+      // 
 
-      trial.constructionTrial = constructionTrial;
 
-      var showStimulus = true;
-      var showBuilding = false;
-
-      blockSetup(constructionTrial, showStimulus, showBuilding);
-
-      var endTrial = function () {
+      var end_trial = function () {
 
         // kill any remaining setTimeout handlers
         jsPsych.pluginAPI.clearAllTimeouts();
@@ -192,15 +233,15 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
         var trial_data = _.extend({
           trial_start_time: trial.trialStartTime,
           trial_finish_time: Date.now(),
-          // rt: response.rt,
+          rt: response.rt,
           condition: trial.condition,
+          novelty: trial.novelty,
           stimulus: trial.stimulus,
           response: response.key,
+          response_meaning: response.key == trial.new_key ? 'new' : 'old',
           response_correct: trial.response_correct,
-          // practice: trial.practice,
-          // stimVersionInd: trial.stimVersionInd,
-          trial_num: trial.trialNum,
-          towerColor: trial.towerColor
+          key_presses: keyPresses,
+          trial_num: trial.trialNum
         }, trial.towerDetails);
   
         // clear the display
@@ -212,84 +253,38 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
         }, trial.iti);
       };
 
+      var after_response = function (response_info) {
+  
+        // only record the first response
+        if ((response.key == null)) {
+          response = response_info;
+        }
+  
+        response_correct = (response.key == trial.new_key & trial.novelty == 'new') | 
+                           (response.key == trial.old_key & trial.novelty == 'old');
 
-      setTimeout(function () {
-        endTrial()
-      }, trial.towerDuration);
+        // console.log(trial.condition, response_correct);
+        response_class = response_correct ? 'responded_correct' : 'responded_incorrect';
+  
+        trial.response_correct = response_correct;
+  
+        // document.removeEventListener('keydown', incrementKeyPresses);
+  
+        if (trial.response_ends_trial) {
+          setTimeout(end_trial, 
+            100);
+        }
+      };
 
-
-
-      // var keyboardListener = jsPsych.pluginAPI.getKeyboardResponse({
-      //   callback_function: after_response,
-      //   valid_responses: trial.choices,
-      //   rt_method: 'performance',
-      //   persist: false,
-      //   allow_held_key: false,
-      // });
-
-      // UI
-      // $("#reset-button").click(() => {
-      //   resetBuilding();
-      // });
-
-      // resetBuilding = function () {
-      //   let nBlocksWhenReset = trial.nBlocksPlaced;
-      //   constructionTrial.nResets += 1;
-      //   trial.nBlocksPlaced = 0;
-      //   resetSender({
-      //     n_blocks_when_reset: nBlocksWhenReset,
-      //   });
-
-      //   if (_.has(blockUniverse, 'p5env') ||
-      //     _.has(blockUniverse, 'p5stim')) {
-      //     blockUniverse.removeEnv();
-      //     blockUniverse.removeStimWindow();
-      //   };
-
-      //   blockSetup(constructionTrial, showStimulus, showBuilding);
-
-      // };
-
-      // resetBuilding(); // call once to clear from previous trial
-
-
+      var keyboardListener = jsPsych.pluginAPI.getKeyboardResponse({
+        callback_function: after_response,
+        valid_responses: trial.choices,
+        rt_method: 'performance',
+        persist: false,
+        allow_held_key: false,
+      });
 
     };
-
-
-    // function endTrial(trial_data) { // called by block_widget when trial ends
-
-    //   trial_data = _.extend(trial_data, {
-    //     trial_start_time: trial.trialStartTime,
-    //     relative_time: Date.now() - trial.trialStartTime,
-    //     // stimURL: trial.stimURL,
-    //     stimulus: trial.stimulus,
-    //     stimId: trial.stimId,
-    //     chunk_id: trial.chunk_id,
-    //     rep: trial.rep,
-    //     condition: trial.condition,
-    //     chunk_type: trial.chunk_type,
-    //     phase: trial.phase,
-    //     zipping_trial_num: trial.zippingTrialNum,
-    //     fixation_duration: trial.fixationDuration,
-    //     gap_duration: trial.gapDuration,
-    //     n_resets: trial.constructionTrial.nResets
-    //   });
-
-    //   var env_divs = document.getElementsByClassName("env-div");
-    //   Array.prototype.forEach.call(env_divs, env_div => {
-    //     env_div.style.backgroundColor = "#58CF76";
-    //   });
-    //   trial.finished = true;
-
-    //   // window.blockUniverse.blockMenu.blockKinds = [];
-
-    //   setTimeout(() => {
-    //     display_element.innerHTML = '';
-    //     jsPsych.finishTrial(trial_data);
-    //   }, 1500);
-      
-    // };
 
   };
 

@@ -34,7 +34,7 @@ var config = {
   disabledColor: [100, 100, 100],
   mistakeColor: [215, 30, 30, 200],
   stimColor: [0, 0, 0],
-  revealedTargetColor: [28, 54, 62, 200],
+  revealedTargetColor: [105, 251, 100, 50],
   menuColor: [236, 232, 226],
   floorColor: [28, 54, 62]
 };
