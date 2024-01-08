@@ -77,4 +77,10 @@ Plugins:
 
 ## build_components_build_recall_6_towers_3_rep_color_pilot_1
 - config: experimentConfigBuildRecall.js
-- 
+
+
+Issue with iteration names here- see below
+## build_components_build_recall_6_towers_3_rep_color_sona_pilot_1_datatest (aka build_components_build_recall_6_towers_3_rep_color_sona_2)
+- config: experimentConfigBuildRecall.js
+- changed instructions to push people away from thinking that they were only meant to 'study' in the view task 
+- ran on SONA (unfortunately forgot to change this iterationName before making a new version of the experiment, so it will take some cleaning up front. Start by finding the ones with workerID, which should be short because they're from SONA. I also think studyLocation is being saved which will help).
