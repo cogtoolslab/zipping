@@ -40,7 +40,7 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
       },
       rep: {
         type: jsPsych.plugins.parameterType.INT,
-        default: 0
+        default: -1
       },
       offset: {
         type: jsPsych.plugins.parameterType.INT,
@@ -192,6 +192,8 @@ jsPsych.plugins["block-tower-viewing"] = (function () {
         var trial_data = _.extend({
           trial_start_time: trial.trialStartTime,
           trial_finish_time: Date.now(),
+          relative_time: Date.now() - trial.trialStartTime,
+          rep: trial.rep,
           // rt: response.rt,
           condition: trial.condition,
           stimulus: trial.stimulus,

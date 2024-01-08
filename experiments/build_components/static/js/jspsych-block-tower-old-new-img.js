@@ -126,7 +126,12 @@ jsPsych.plugins["block-tower-old-new-img"] = (function () {
         pretty_name: 'Trial Number',
         default: 0,
         description: 'Externally assigned trial number.'
-      }
+      },
+      towerColor: {
+        type: jsPsych.plugins.parameterType.OBJECT,
+        pretty_name: "Color to display blocks",
+        default: null,
+      },
     },
   };
 
@@ -241,7 +246,8 @@ jsPsych.plugins["block-tower-old-new-img"] = (function () {
           response_meaning: response.key == trial.new_key ? 'new' : 'old',
           response_correct: trial.response_correct,
           key_presses: keyPresses,
-          trial_num: trial.trialNum
+          trial_num: trial.trialNum,
+          towerColor: trial.towerColor
         }, trial.towerDetails);
   
         // clear the display

@@ -3,7 +3,7 @@ expConfig = {
     "dbname": "block_construction",
     "colname": "build_components",
     "stimColName": "build_components_6_towers_plus_distractors", // same 6 towers across experiments, plus distractors
-    "iterationName": "build_components_ve_old_new_cogsci_dev",
+    "iterationName": "build_components_cogsci_ve_old_new_data_run_through",
     "completionCode": "C1JNYQLZ",
     "devMode": true,
     "experimentParameters": { // parameters for the experiment.
@@ -15,7 +15,7 @@ expConfig = {
                       [150, 243, 227, 255],
                       [214, 186, 241, 255],
                       [101, 101, 101, 255]],
-      "workingMemoryVersion" : true,
+      "workingMemoryVersion" : false,
       "encodePreload" : true,
       "decodePreload" : true,// might not need if encode preload works
       "foilsFromDistractors": true,

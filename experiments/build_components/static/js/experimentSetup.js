@@ -343,7 +343,6 @@ function setupExperiment() {
         // select plugin based on trialType
         let trialPlugin = expConfig["trialTypes"][trialType];
 
-        console.log(metadatum);
         let stimKind = metadatum.condition == 'foil' ? metadatum.distractorKind : 'original';
         let targetSource = metadatum.condition == 'foil' ? metadatum.associatedTargetDetails.tower_id_tall : metadatum.tower_id_tall;
         let stimPath = getStimPath(stimKind, targetSource, metadatum.towerColor); // distractorKind, targetSourceID, towerColor

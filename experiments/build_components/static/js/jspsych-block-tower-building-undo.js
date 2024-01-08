@@ -48,7 +48,7 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
       },
       rep: {
         type: jsPsych.plugins.parameterType.INT,
-        default: 0
+        default: -1
       },
       offset: {
         type: jsPsych.plugins.parameterType.INT,
@@ -204,6 +204,8 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
           {},
           blockData,
           {
+            trial_num: trial.trialNum,
+            trial_type: plugin.info.name,
             absolute_time: timeNow,
             datatype: 'block_undo_placement',
             relative_time: timeNow - trial.trialStartTime,
@@ -223,6 +225,8 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
           {},
           blockData,
           {
+            trial_num: trial.trialNum,
+            trial_type: plugin.info.name,
             absolute_time: timeNow,
             datatype: 'block_redo_placement',
             relative_time: timeNow - trial.trialStartTime,
@@ -316,6 +320,7 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
 
       trial_data = _.extend(trial_data, trial.towerDetails, {
         trial_start_time: trial.trialStartTime,
+        trial_finish_time: Date.now(),
         relative_time: Date.now() - trial.trialStartTime,
         stimulus: trial.stimulus,
         rep: trial.rep,
@@ -365,6 +370,8 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
           block_data, 
           trial.towerDetails, 
           {
+            trial_num: trial.trialNum,
+            trial_type: plugin.info.name,
             trial_start_time: trial.trialStartTime,
             relative_time: Date.now() - trial.trialStartTime,
             datatype: 'block_placement',
@@ -389,6 +396,8 @@ jsPsych.plugins["block-tower-building-undo"] = (function () {
           reset_data, 
           trial.towerDetails, 
           {
+            trial_num: trial.trialNum,
+            trial_type: plugin.info.name,
             absolute_time: timeNow,
             trial_start_time: trial.trialStartTime,
             relative_time: timeNow - trial.trialStartTime,
