@@ -5,7 +5,7 @@ expConfig = {
     "stimColName": "build_components_6_towers_plus_distractors", // same 6 towers across experiments, plus distractors
     "iterationName": "build_components_ve_old_new_cogsci_dev",
     "completionCode": "C1JNYQLZ",
-    "devMode": false,
+    "devMode": true,
     "experimentParameters": { // parameters for the experiment.
       "learningITI": 1000,
       "nLearningReps": 2,
@@ -15,9 +15,12 @@ expConfig = {
                       [150, 243, 227, 255],
                       [214, 186, 241, 255],
                       [101, 101, 101, 255]],
-      "workingMemoryVersion" : false,
+      "workingMemoryVersion" : true,
       "encodePreload" : true,
+      "decodePreload" : true,// might not need if encode preload works
       "foilsFromDistractors": true,
+      "distractorKinds" : ['horizontal_flip', 'vertical_flip', 'both_flip', 'tall_swap', 'wide_swap'],
+      "distractorPath": '../img/cogsci_towers/cogsci_towers_'
     },
     "prolificCompInfo":"<p>Thank you for participating in our experiment. It will take around <strong>20 minutes</strong> total to complete, including the time it takes to read these instructions. You will be paid $5.17 (around $15.50 per hour). You can only perform this experiment one time.</p><p>Note: We recommend maximizing your browser window to ensure everything is displayed correctly. Please do not refresh the page or press the back button.</p>",
     // "compensationInfo":"<p>Thank you for participating in our experiment. It should take a total of <strong>25 minutes</strong>, including the time it takes to read these instructions. You will receive $6.00 for completing this study (approx. $15/hr).</p><p>When you are finished, the study will be automatically submitted to be reviewed for approval. You can only perform this study one time. We take your compensation and time seriously! Please message us if you run into any problems while completing this study, or if it takes much more time than expected.</p></br><p>Note: we recommend using Chrome, and putting your browser in full screen. This study has not been tested in other browsers.</p>",
@@ -38,9 +41,10 @@ expConfig = {
         prompt : "LOOK",
         },
       "oldNew" : {
-        imagePath : '../img/shared_stims_plus_distractors/',
+        imagePath : '../img/cogsci_towers/cogsci_towers_',
         iti : 1000,
-        prompt : "old or new?"},
+        prompt : "old or new?"
+      }
     },
     "trialTypes":{
       "build": "block-tower-building-undo",

@@ -5,7 +5,7 @@ expConfig = {
     "stimColName": "build_components_6_towers_plus_distractors", // same 6 towers across experiments, plus distractors
     "iterationName": "build_components_wm_old_new_cogsci_dev",
     "completionCode": "C1JNYQLZ",
-    "devMode": true,
+    "devMode": false,
     "experimentParameters": { // parameters for the experiment.
       "learningITI": 1000,
       "nLearningReps": 2,
@@ -17,6 +17,7 @@ expConfig = {
                       [101, 101, 101, 255]],
       "workingMemoryVersion" : true,
       "encodePreload" : true,
+      "decodePreload" : true,// might not need if encode preoad works
       "foilsFromDistractors": true,
       "distractorKinds" : ['horizontal_flip', 'vertical_flip', 'both_flip', 'tall_swap', 'wide_swap'],
       "distractorPath": '../img/cogsci_towers/cogsci_towers_'

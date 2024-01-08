@@ -526,13 +526,15 @@ img.fixation{
 } 
 
 .left-emoji-text{
+    font-size: larger;
     float: left;
-    transform: translate(10px, 45px);
+    transform: translate(10px, 25px);
 } 
 
 .right-emoji-text{
+    font-size: larger;
     float: right;
-    transform: translate(-10px, 45px);
+    transform: translate(-10px, 25px);
 } 
 
 /* 
@@ -588,4 +590,13 @@ img.fixation{
 
 #build-buttons{
     
+}
+
+.old-new-img-container{
+    display: flex;
+    justify-content: center;
+}
+
+#stimulus-img{
+    margin: 50px;
 }

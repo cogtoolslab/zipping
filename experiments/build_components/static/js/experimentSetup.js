@@ -15,7 +15,8 @@ function setupExperiment() {
     const gameID = UUID();
 
     var metadata;
-    var trialNumCounter = 0; //
+    var localFoils = [];
+    var trialNumCounter = 0; 
 
     getStimListFromMongo();
 
@@ -185,6 +186,12 @@ function setupExperiment() {
 
     }
 
+    getStimPath = function(distractorKind, targetSourceID, towerColor) {
+
+        return (expConfig.experimentParameters.distractorPath + targetSourceID + '_' + distractorKind + '_' + rgbaToHex(towerColor) + '.png');
+
+    }
+
 
     getTargetPath = function(metadatum, trialType) {
 
@@ -231,13 +238,18 @@ function setupExperiment() {
         // for each target tower, randomly choose a foil from the set of distractors
         if (expConfig.experimentParameters.foilsFromDistractors){
 
-
             splitDistractors = chooseFoilFromDistractors(expConfig.experimentParameters.distractorKinds);
     
-            // TODO: do something with foil        
-            //splitDistractors.foil
-            // TODO CREATE OLD-NEW TRIALS THAT USE FOIL (FOIL IMAGE) AS TARGET
 
+            // CREATE OLD-NEW TRIALS THAT USE FOIL (FOIL IMAGE) AS TARGET
+            localFoils.push({
+                condition : "foil",
+                distractorKind: splitDistractors.foil,
+                assignment_number: metadatum.assignment_number, // metadatum is for the target trial associated with this distractor
+                associatedTargetDetails : getTowerDetails(metadatum),
+                towerColor: metadatum.towerColor,
+                colorCondition : metadatum.condition
+            });
 
             // if this is a match-to-sample trial, add the distractors
             if (expConfig.taskParameters[trialType]['distractorSubset']) {
@@ -260,17 +272,22 @@ function setupExperiment() {
             }
         } else if (expConfig.taskParameters[trialType]['distractorKinds']) {
 
-            let distractors = getDistractorPaths(metadatum, trialType);
-            imagesToPreload = _.concat(imagesToPreload, distractors);
-            
+            splitDistractors = chooseFoilFromDistractors(expConfig.experimentParameters.distractorKinds);
 
-            let target = getTargetPath(metadatum, trialType);
-            imagesToPreload.push(target);
+            // let distractors = getDistractorPaths(metadatum, trialType);
+            // imagesToPreload = _.concat(imagesToPreload, distractors);
+
+            let distractors = getDistractorPathsFromList(splitDistractors.distractors, metadatum);
+                imagesToPreload = _.concat(imagesToPreload, distractors);
+
+                let target = getTargetPath(metadatum, trialType);
+                imagesToPreload.push(target);
 
             _.extend(studyTrial, 
                 {
                     distractors : distractors,
-                    distractorKinds : expConfig.taskParameters[trialType].distractorKinds, // for easy data forwarding
+                    distractorKinds : splitDistractors.distractors, // for easy data forwarding
+                    leftOutFoil : splitDistractors.foil,
                     target : target
                 }
                 )
@@ -326,14 +343,22 @@ function setupExperiment() {
         // select plugin based on trialType
         let trialPlugin = expConfig["trialTypes"][trialType];
 
+        console.log(metadatum);
+        let stimKind = metadatum.condition == 'foil' ? metadatum.distractorKind : 'original';
+        let targetSource = metadatum.condition == 'foil' ? metadatum.associatedTargetDetails.tower_id_tall : metadatum.tower_id_tall;
+        let stimPath = getStimPath(stimKind, targetSource, metadatum.towerColor); // distractorKind, targetSourceID, towerColor
+
         // create trial and add parameters for trial type from config
         let trial = _.extend({
             type: trialPlugin,
             trialType: trialType,
             condition: metadatum.condition,
+            colorCondition: metadatum.colorCondition ? metadatum.colorCondition: metadatum.condition,
             novelty: metadatum.condition == 'foil' ? 'new' : 'old',
-            stimulus: {'blocks': metadatum.stim_tall},
+            stimulus: trialPlugin == "block-tower-old-new-img" ? stimPath :  {'blocks': metadatum.stim_tall},
+            distractorKind: metadatum.distractorKind,
             towerDetails: getTowerDetails(metadatum),
+            associatedTargetDetails: metadatum.associatedTargetDetails ? metadatum.associatedTargetDetails : getTowerDetails(metadatum),
             assignment_number : metadatum.assignment_number,
             offset: 4,
             new_key: metadata.response_key_dict['new'],
@@ -419,6 +444,17 @@ function setupExperiment() {
                 decodeTrials = [createBuildRecallTrial(metadata)];
             };
             
+        } else if (expConfig["experimentParameters"]["foilsFromDistractors"] ) {
+
+            targetsPlusFoils = _.concat(metadata.trials, localFoils);
+
+            console.log('targs n foils', targetsPlusFoils);
+
+
+            decodeTrials = _.map(targetsPlusFoils, trialMetadatum => {
+                return metadatumToOldNewTrial(trialMetadatum) // TODO swap out/ parameterize for old-new-img
+            });
+
         } else { // otherwise create an old-new trial for each stimulus (pilot_2 and previous)
             decodeTrials = _.map(metadata.trials, trialMetadatum => {
                 return metadatumToOldNewTrial(trialMetadatum)
@@ -431,19 +467,41 @@ function setupExperiment() {
 
         decodeTrials = _.shuffle(decodeTrials);
 
+        let decodeTrialNum = 0;
         decodeTrials.forEach(trial => {
             trialNumCounter += 1;
             trial.trialNum = trialNumCounter;
+
+            decodeTrialNum += 1;
+            trial.decodeTrialNum = decodeTrialNum
         });
+        window.totalDecodeTrials = decodeTrialNum;
 
         // add phase instructions
         decodePhaseInstructions = makeInstructions(_.map(expConfig['decodePhaseInstructions'], mapKeys));
 
+        
+
+        if (expConfig.experimentParameters.decodePreload){
+
+            // console.log('images', imagesToPreload);
+
+            var decodePreload = {
+                type: 'preload',
+                auto_preload: true,
+                trials: decodeTrials,
+                images : imagesToPreload
+            };
+
+            trialList = _.concat(trialList, [decodePreload]);
+        }
+
         trialList = _.concat(trialList,
-                            decodePhaseInstructions,
-                            {timeline: decodeTrials});
+            decodePhaseInstructions,
+            {timeline: decodeTrials});
 
         // forward trial list to next setup function
+
         callback(trialList);
     };
 
@@ -556,7 +614,7 @@ function setupExperiment() {
 
         /* #### Initialize jsPsych with complete experimental timeline #### */
         jsPsych.init({
-            timeline: trialList,
+            timeline: trialList, // trialList.slice(-2),
             show_progress_bar: false,
             default_iti: 600, //up from 600 in zipping_calibration_sona_pilot
             on_trial_finish: function (trialData) {

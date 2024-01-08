@@ -50,6 +50,10 @@ jsPsych.plugins["block-tower-old-new-img"] = (function () {
         type: jsPsych.plugins.parameterType.INT,
         default: 0
       },
+      targetSize: {
+        type: jsPsych.plugins.parameterType.INT,
+        default: 200
+      },
       offset: {
         type: jsPsych.plugins.parameterType.INT,
         pretty_name: "Offset",
@@ -142,14 +146,14 @@ jsPsych.plugins["block-tower-old-new-img"] = (function () {
     html_content += '<div class="container" id="experiment">';
 
     /** Create domain canvas **/
-    html_content += '<div class="row pt-1 env-row">';
-    html_content += '<div class="col env-div" id="stimulus-canvas"></div>';
+    html_content += '<div class="row pt-1 env-row old-new-img-container">';
+    // html_content += '<div class="col env-div" id="stimulus-canvas"></div>';
     // html_content += '<div class=" col env-div" id="environment-canvas"></div>';
-    html_content +="<img id='stimulus-img' src='"+trial.stimulus+"'></img>";
+    html_content +="<img id='stimulus-img' src='"+trial.stimulus+"' style='width: "+ trial.targetSize +"px'></img>";
     html_content += '</div>';
 
     html_content += '<div class="col pt-3 text-right">';
-    html_content += '<h5 id="trial-counter-center">Tower ' + window.recallTrialNum + ' of ' + window.totalTrials +'</h5>';
+    html_content += '<h5 id="trial-counter-center">Tower ' + trial.decodeTrialNum + ' of ' + window.totalDecodeTrials +'</h5>';
     // html_content += '<button id="reset-button" type="button" class="btn btn-primary">Reset</button>';
     html_content += '</div>';
 
@@ -206,10 +210,10 @@ jsPsych.plugins["block-tower-old-new-img"] = (function () {
       // var showBuilding = false;
       // blockSetup(blockDisplay, showStimulus, showBuilding);
     
-      // new_side = trial.new_key == 'z' ? "left" : "right";
-      // old_side = trial.old_key == 'z' ? "left" : "right";
-      // $('#new-text').addClass(new_side+"-emoji-text");
-      // $('#old-text').addClass(old_side+"-emoji-text");
+      new_side = trial.new_key == 'z' ? "left" : "right";
+      old_side = trial.old_key == 'z' ? "left" : "right";
+      $('#new-text').addClass(new_side+"-emoji-text");
+      $('#old-text').addClass(old_side+"-emoji-text");
       
       // TODO: display as image
       // 
