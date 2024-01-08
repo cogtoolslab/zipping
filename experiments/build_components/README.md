@@ -84,3 +84,14 @@ Issue with iteration names here- see below
 - config: experimentConfigBuildRecall.js
 - changed instructions to push people away from thinking that they were only meant to 'study' in the view task 
 - ran on SONA (unfortunately forgot to change this iterationName before making a new version of the experiment, so it will take some cleaning up front. Start by finding the ones with workerID, which should be short because they're from SONA. I also think studyLocation is being saved which will help).
+
+
+## build_components_build_recall_wm
+- config: experimentConfigBuildRecallWM.js
+- sticking with 6 towers, 3 reps
+  - Build task is now a WM version: i.e. show tower, hide tower, build 
+    -   
+  - View task is now a match-to-sample task
+    - 
+- Same stimuli but with new distractors for match-to-sample task
+- Rather than create new plugins for WM version, I'm using the tower-viewing plugin as the exposure, then the immediately following study phase is a whole different "trial"

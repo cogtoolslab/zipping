@@ -11,7 +11,7 @@ const colors = require("colors/safe");
 
 const app = express();
 const MongoClient = mongodb.MongoClient;
-const port = 6023;
+const port = 6024;
 const mongoCreds = require("./auth.json");
 
 let USEMONGOCLOUD;

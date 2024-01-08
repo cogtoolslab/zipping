@@ -163,7 +163,7 @@ div.submitted-towers{
 }
 
 #practice-feedback{
-    color: red;
+    color: #cc4646;
 }
 
 .btn{
@@ -197,7 +197,7 @@ div.submitted-towers{
 
 
 .color-btn.selected {
-    border: 5px solid black;
+    border: 5px solid black; 
 }
 
 
@@ -526,13 +526,15 @@ img.fixation{
 } 
 
 .left-emoji-text{
+    font-size: larger;
     float: left;
-    transform: translate(10px, 45px);
+    transform: translate(10px, 25px);
 } 
 
 .right-emoji-text{
+    font-size: larger;
     float: right;
-    transform: translate(-10px, 45px);
+    transform: translate(-10px, 25px);
 } 
 
 /* 
@@ -569,4 +571,32 @@ img.fixation{
 
 #mask{
     width: 400px;
+}
+
+/* Match to sample */
+
+.m2s-fixation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Optional: set a specific size for the image, if desired */
+  }
+
+.env-upper-text {
+    margin-top: 0px !important;
+
+}
+
+#build-buttons{
+    
+}
+
+.old-new-img-container{
+    display: flex;
+    justify-content: center;
+}
+
+#stimulus-img{
+    margin: 50px;
 }

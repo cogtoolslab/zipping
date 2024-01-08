@@ -1,5 +1,5 @@
 /*
- * Working Memory version of block construction pluging. This task displays the composite on the left for a brief period, then requires the participant to build and check their reconstruction. They only pass to the next trial when their reconstruction is correct. 
+ * Working Memory version of block construction plugin. This task displays the composite on the left for a brief period, then requires the participant to build and check their reconstruction. They only pass to the next trial when their reconstruction is correct. 
  * Displays a domain stimuli and prompts subject for language production.
  *
  * Requirements for towers domain.

@@ -22,7 +22,7 @@ if (argv.gameport) {
   var gameport = argv.gameport;
   console.log('using port ' + gameport);
 } else {
-  var gameport = 8850;
+  var gameport = 8851;
   console.log('no gameport specified: using ' + gameport + '\nUse the --gameport flag to change');
 }
 
@@ -84,7 +84,7 @@ io.on('connection', function (socket) {
 
   socket.on('getStim', function(data) {
 
-    sendPostRequest('http://localhost:6023/db/getstims', {
+    sendPostRequest('http://localhost:6024/db/getstims', {
       json: {
         dbname: 'stimuli',
         colname: data.stimColName,
@@ -137,7 +137,7 @@ function checkPreviousParticipant(workerId, callback) {
     projection: { '_id': 1 }
   };
   sendPostRequest(
-    'http://localhost:6023/db/exists',  // match port number to store.js
+    'http://localhost:6024/db/exists',  // match port number to store.js
     { json: postData },
     (error, res, body) => {
       try {
@@ -171,7 +171,7 @@ function UUID() {
 };
 
 var writeDataToMongo = function (data) {
-  sendPostRequest('http://localhost:6023/db/insert',
+  sendPostRequest('http://localhost:6024/db/insert',
     { json: data },
     (error, res, body) => {
       if (!error && res.statusCode === 200) {
