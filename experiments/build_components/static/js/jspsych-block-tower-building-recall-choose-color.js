@@ -230,6 +230,8 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
           {},
           blockData,
           {
+            trial_num: trial.trialNum,
+            trial_type: plugin.info.name,
             absolute_time: timeNow,
             datatype: 'block_undo_placement',
             relative_time: timeNow - trial.trialStartTime
@@ -254,6 +256,8 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
           {},
           blockData,
           {
+            trial_num: trial.trialNum,
+            trial_type: plugin.info.name,
             absolute_time: timeNow,
             datatype: 'block_redo_placement',
             relative_time: timeNow - trial.trialStartTime
@@ -467,6 +471,8 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
           block_data, 
           trial.towerDetails, 
           {
+            trial_num: trial.trialNum,
+            trial_type: plugin.info.name,
             trial_start_time: trial.trialStartTime,
             relative_time: Date.now() - trial.trialStartTime,
             datatype: 'block_placement',
@@ -490,6 +496,8 @@ jsPsych.plugins["block-tower-building-recall-choose-color"] = (function () {
           reset_data, 
           trial.towerDetails, 
           {
+            trial_num: trial.trialNum,
+            trial_type: plugin.info.name,
             absolute_time: timeNow,
             trial_start_time: trial.trialStartTime,
             relative_time: timeNow - trial.trialStartTime,

@@ -3,9 +3,9 @@ expConfig = {
     "dbname": "block_construction",
     "colname": "build_components",
     "stimColName": "build_components_6_towers_plus_distractors", // same 6 towers across experiments, plus distractors
-    "iterationName": "build_components_wm_recall_cogsci_dev",
+    "iterationName": "build_components_cogsci_ve_recall_data_run_through",
     "completionCode": "C1JNYQLZ",
-    "devMode": false,
+    "devMode": true,
     "experimentParameters": { // parameters for the experiment.
       "learningITI": 1000,
       "nLearningReps": 2,

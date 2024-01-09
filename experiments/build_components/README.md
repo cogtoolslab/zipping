@@ -95,3 +95,44 @@ Issue with iteration names here- see below
     - 
 - Same stimuli but with new distractors for match-to-sample task
 - Rather than create new plugins for WM version, I'm using the tower-viewing plugin as the exposure, then the immediately following study phase is a whole different "trial"
+
+
+# cogsci experiments
+
+## build_components_cogsci_ve_old_new_dev
+- 6 target stimuli
+- encode phase:
+  - 2 reps
+  - BUILD COPY or VIEW
+- decode phase:
+  - OLD/NEW (with random distractor)
+
+## build_components_cogsci_ve_recall_dev
+- 6 target stimuli
+- encode phase:
+  - 2 reps
+  - BUILD COPY or VIEW
+- decode phase:
+  - BUILD RECALL
+
+## build_components_cogsci_wm_old_new_dev
+- 6 target stimuli
+- encode phase:
+  - 2 reps
+  - STUDY followed by either BUILD or MATCH (with 4 of 5 generated distractors)
+- decode phase:
+  - OLD/NEW (with held-out 5th distractor)
+
+## build_components_cogsci_wm_recall_dev
+- 6 target stimuli
+- encode phase:
+  - 2 reps
+  - STUDY followed by either BUILD or MATCH (with 4 of 5 generated distractors)
+- decode phase:
+  - BUILD RECALL
+
+
+
+
+
+

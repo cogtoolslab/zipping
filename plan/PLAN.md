@@ -31,7 +31,7 @@ Build task: Participants are instructed to “study the shape of the tower by bu
 
 ### Decoding (shared between experiments)
 Old-new
-Participants are presented with either a tower they saw during the encoding phase or a randomly sampled distractor. They were instructed to indicate whether they had studied the presented tower before by clicking one of two buttons: “old” or “new.” Participants responded accordingly to XX towers in total.
+Participants are presented with either a tower they saw during the encoding phase or a randomly sampled distractor. They were instructed to indicate whether they had studied the presented tower before by clicking one of two buttons: “old” or “new.” Participants responded accordingly to 12 towers in total.
 
 
 Build recall
@@ -132,3 +132,36 @@ negative_trial_index: index of final encoding trial counting backwards from last
 trial_gap: number of trials between final encoding trial and recalled tower (counting each recalled tower as a single tower).
 time_between_trials: time (in ms between last encoding trial and recall trial)
 
+# Settings for experiments
+
+## build_components_cogsci_ve_old_new_dev
+- 6 target stimuli
+- encode phase:
+  - 2 reps
+  - BUILD COPY or VIEW
+- decode phase:
+  - OLD/NEW (with random distractor)
+
+## build_components_cogsci_ve_recall_dev
+- 6 target stimuli
+- encode phase:
+  - 2 reps
+  - BUILD COPY or VIEW
+- decode phase:
+  - BUILD RECALL
+
+## build_components_cogsci_wm_old_new_dev
+- 6 target stimuli
+- encode phase:
+  - 2 reps
+  - STUDY followed by either BUILD or MATCH (with 4 of 5 generated distractors)
+- decode phase:
+  - OLD/NEW (with held-out 5th distractor)
+
+## build_components_cogsci_wm_recall_dev
+- 6 target stimuli
+- encode phase:
+  - 2 reps
+  - STUDY followed by either BUILD or MATCH (with 4 of 5 generated distractors)
+- decode phase:
+  - BUILD RECALL
