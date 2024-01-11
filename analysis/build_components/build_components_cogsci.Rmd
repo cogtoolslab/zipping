@@ -1,0 +1,126 @@
+---
+title: "build_components"
+author: "Will McCarthy"
+date: "2024-01-10"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(lme4)
+# library(lmerTest)
+library(ggthemes)
+library(performance) 
+library(see)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# Recognition (old-new)
+
+## Import data
+
+```{r import}
+experiment.results.dir = '../../results/build_components/cogsci24/'
+
+df.recog <- read_csv(paste(experiment.results.dir, 'df_recog_ve.csv', sep=''))
+
+df.recog <- df.recog %>%
+  mutate(respond_old = 1*(response_meaning == 'old'))
+
+df.recog
+
+# df.dprimes <- read_csv('../../results/build_components/csv/df_condition_measures_build_components_pilot_2.csv')
+
+# df.dprimes
+```
+
+## Mixed effects linear models
+
+### Predicting response from condition
+```{r lmer.condition}
+m1 <- glmer(data = df.recog, family = binomial, respond_old ~ (1 | gameID) + (1 | tower_id))
+m2 <- glmer(data = df.recog, family = binomial, respond_old ~ condition + (1 | gameID) + (1 | tower_id))
+anova(m1, m2)
+summary(m2)
+
+# confint(m2, level = 0.95)
+
+```
+
+### Predicting response from condition and type
+```{r lmer.condition}
+m1 <- glmer(data = df.recog, family = binomial, respond_old ~ (1 | gameID) + (1 | tower_id))
+m2 <- glmer(data = df.recog, family = binomial, respond_old ~ distractorKind + (1 | gameID) + (1 | tower_id))
+anova(m1, m2)
+summary(m2)
+
+# confint(m2, level = 0.95)
+
+```
+
+
+
+### By d' (not currently used)
+
+Intercept shows that ppts do recognize towers they have previously experienced.
+Slope on condition shows that participants are more likely to recognize viewed towers than built towers.
+```{r d.prime.lmers}
+# m1 <- lm(data = df.dprimes, d_prime ~ condition)
+# anova(m1)
+# summary(m1)
+# 
+# confint(m1, level = 0.95)
+```
+
+
+# Recognition (old-new)
+
+## Import data
+
+```{r import}
+experiment.results.dir = '../../results/build_components/cogsci24/'
+
+df.recall <- read_csv(paste(experiment.results.dir, 'df_encode_w_recalls_ve.csv', sep=''))
+# 
+# df.recall <- df.recall %>%
+#   mutate(respond_old = 1*(response_meaning == 'old'))
+
+df.recall
+
+```
+
+
+### Predicting perfect recall from condition
+```{r lmer.condition}
+m1 <- glmer(data = df.recall, family = binomial, perfectly_recalled ~ (1 | gameID) + (1 | tower_id))
+m2 <- glmer(data = df.recall, family = binomial, perfectly_recalled ~ condition + (1 | gameID) + (1 | tower_id))
+anova(m1, m2)
+summary(m2)
+
+# confint(m2, level = 0.95)
+
+```
+### Predicting F1 score from condition
+```{r lmer.condition}
+m1 <- lmer(data = df.recall, f1_score ~ (1 | gameID) + (1 | tower_id))
+m2 <- lmer(data = df.recall, f1_score ~ condition + (1 | gameID) + (1 | tower_id))
+anova(m1, m2)
+summary(m2)
+
+# confint(m2, level = 0.95)
+
+```
+### Predicting F1 score from condition
+```{r lmer.condition}
+m1 <- lmer(data = df.recall, f1_score ~ condition + (1 | gameID))
+# m2 <- lmer(data = df.recall, f1_score ~ condition + (1 | gameID) + (1 | tower_id))
+# anova(m1, m2)
+summary(m1)
+
+# confint(m2, level = 0.95)
+
+```

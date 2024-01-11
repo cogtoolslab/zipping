@@ -132,6 +132,11 @@ jsPsych.plugins["block-tower-old-new-img"] = (function () {
         pretty_name: "Color to display blocks",
         default: null,
       },
+      distractorKind: {
+        type: jsPsych.plugins.parameterType.OBJECT,
+        pretty_name: "kind of distractor if given",
+        default: null,
+      },
     },
   };
 
@@ -238,6 +243,7 @@ jsPsych.plugins["block-tower-old-new-img"] = (function () {
         var trial_data = _.extend({
           trial_start_time: trial.trialStartTime,
           trial_finish_time: Date.now(),
+          relative_time: Date.now() - trial.trialStartTime,
           rt: response.rt,
           condition: trial.condition,
           novelty: trial.novelty,
@@ -247,7 +253,8 @@ jsPsych.plugins["block-tower-old-new-img"] = (function () {
           response_correct: trial.response_correct,
           key_presses: keyPresses,
           trial_num: trial.trialNum,
-          towerColor: trial.towerColor
+          towerColor: trial.towerColor,
+          distractorKind: trial.distractorKind
         }, trial.towerDetails);
   
         // clear the display

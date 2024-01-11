@@ -449,7 +449,6 @@ function setupExperiment() {
 
             console.log('targs n foils', targetsPlusFoils);
 
-
             decodeTrials = _.map(targetsPlusFoils, trialMetadatum => {
                 return metadatumToOldNewTrial(trialMetadatum) // TODO swap out/ parameterize for old-new-img
             });
