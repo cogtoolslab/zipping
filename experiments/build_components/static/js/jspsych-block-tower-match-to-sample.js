@@ -446,6 +446,7 @@ jsPsych.plugins["block-tower-match-to-sample"] = (function () {
       var trial_data = _.extend({}, data, {
         absolute_time: timeNow,
         trial_start_time: trial.trialStartTime,
+        relative_time: timeNow - arrayDisplayTime,
         rt: timeNow - arrayDisplayTime,
         locations: display_locs,
         set_size: trial.set_size,

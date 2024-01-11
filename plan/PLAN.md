@@ -134,6 +134,22 @@ time_between_trials: time (in ms between last encoding trial and recall trial)
 
 # Settings for experiments
 
+# Participants
+We aim to collect data from 50 participants for each of the following 4 experiments, after accounting for participants excluded according to the following criteria.
+
+- did not complete all encode trials
+- indicated that they did not understand the task in the exit survey
+- were in the recall condition and 
+  - did not submit any tower reconstructions
+- were in the old new condition and
+  - responded to > 90% of trials with the same button
+  - spent longer than 10 minutes between finishing the final encoding trial and starting the first decoding phase
+
+We will additionally flag participants who meet the following criteria
+- were in the working memory version and failed to correctly match any towers
+- were in the working memory version and failed to rebuild any tower on the first attempt
+
+
 ## build_components_cogsci_ve_old_new_dev
 - 6 target stimuli
 - encode phase:
