@@ -29,7 +29,8 @@ experiment.results.dir = '../../results/build_components/cogsci24/'
 df.recog <- read_csv(paste(experiment.results.dir, 'df_recog_ve.csv', sep=''))
 
 df.recog <- df.recog %>%
-  mutate(respond_old = 1*(response_meaning == 'old'))
+  mutate(responded_old = 1*(response_meaning == 'old')) %>% 
+  mutate(is_target = 1*(condition != 'foil'))
 
 df.recog
 
@@ -42,10 +43,11 @@ df.recog
 
 ### Predicting response from condition
 ```{r lmer.condition}
-m1 <- glmer(data = df.recog, family = binomial, respond_old ~ (1 | gameID) + (1 | tower_id))
-m2 <- glmer(data = df.recog, family = binomial, respond_old ~ condition + (1 | gameID) + (1 | tower_id))
-anova(m1, m2)
-summary(m2)
+m1 <- glmer(data = df.recog, family = binomial, responded_old ~ is_target + (1 | gameID) + (1 | tower_id))
+m2 <- glmer(data = df.recog, family = binomial, responded_old ~ condition + is_target + (1 | gameID) + (1 | tower_id))
+m3 <- glmer(data = df.recog, family = binomial, responded_old ~ condition * is_target + (1 | gameID) + (1 | tower_id))
+anova(m1, m2, m3)
+summary(m3)
 
 # confint(m2, level = 0.95)
 
@@ -84,7 +86,7 @@ Slope on condition shows that participants are more likely to recognize viewed t
 ```{r import}
 experiment.results.dir = '../../results/build_components/cogsci24/'
 
-df.recall <- read_csv(paste(experiment.results.dir, 'df_encode_w_recalls_ve.csv', sep=''))
+df.recall <- read_csv(paste(experiment.results.dir, 'df_encode_with_recalls_ve.csv', sep=''))
 # 
 # df.recall <- df.recall %>%
 #   mutate(respond_old = 1*(response_meaning == 'old'))
