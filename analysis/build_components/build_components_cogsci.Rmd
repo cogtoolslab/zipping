@@ -13,6 +13,8 @@ library(ggthemes)
 library(performance) 
 library(see)
 library(lmerTest)
+library(effsize)
+
 ```
 
 
@@ -21,12 +23,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
-# Recognition (old-new)
+# E1: Recognition (old-new)
 
 ```{r import}
-experiment.results.dir = '../../results/build_components/cogsci24/'
+# import VSS dataset
 
-df.recog <- read_csv(paste(experiment.results.dir, 'df_recog_ve.csv', sep=''))
+experiment.results.dir = '../../results/recognition/csv/'
+
+df.recog <- read_csv(paste(experiment.results.dir, 'df_recog_vss.csv', sep=''))
 
 df.recog <- df.recog %>%
   mutate(responded_old = 1*(response_meaning == 'old')) %>% 
@@ -79,27 +83,54 @@ Slope on condition shows that participants are more likely to recognize viewed t
 ```
 
 
-# Recall
+# E2: Recall
 
 ## Import data
 
 ```{r import}
-experiment.results.dir = '../../results/build_components/cogsci24/'
+# import VSS dataset
+experiment.results.dir = '../../results/recall/csv/'
 
-df.recall <- read_csv(paste(experiment.results.dir, 'df_encode_with_recalls_ve.csv', sep=''))
+df.recall.vss <- read_csv(paste(experiment.results.dir, 'df_encode_with_recalls_vss.csv', sep=''))
 # 
 # df.recall <- df.recall %>%
 #   mutate(respond_old = 1*(response_meaning == 'old'))
 
-df.recall
+df.recall.vss
+
+df.recall.vss <- df.recall.vss %>% 
+  mutate(
+    condition = relevel(as_factor(condition), ref = "view")
+  )
 
 ```
 
+### Predicting match vs. non-match from condition
+```{r lmer.condition}
+m1 <- glmer(data = df.recall.vss, family = binomial, matched_to_any ~ (1 | gameID))
+m2 <- glmer(data = df.recall.vss, family = binomial, matched_to_any ~ condition + (1 | gameID))
+anova(m1, m2)
+summary(m2)
 
+# confint(m2, level = 0.95)
+
+```
 ### Predicting perfect recall from condition
 ```{r lmer.condition}
-m1 <- glmer(data = df.recall, family = binomial, perfectly_recalled ~ (1 | gameID) + (1 | tower_id))
-m2 <- glmer(data = df.recall, family = binomial, perfectly_recalled ~ condition + (1 | gameID) + (1 | tower_id))
+m1 <- glmer(data = df.recall.vss, family = binomial, perfectly_recalled ~ (1 | gameID))
+m2 <- glmer(data = df.recall.vss, family = binomial, perfectly_recalled ~ condition + (1 | gameID))
+anova(m1, m2)
+summary(m2)
+
+# confint(m2, level = 0.95)
+
+```
+
+
+### Predicting F1 score from condition
+```{r lmer.condition}
+m1 <- lmer(data = df.recall.vss, bestMatchScore ~ (1 | gameID) + (1 | tower_id))
+m2 <- lmer(data = df.recall.vss, bestMatchScore ~ condition + (1 | gameID) + (1 | tower_id))
 anova(m1, m2)
 summary(m2)
 
@@ -108,17 +139,7 @@ summary(m2)
 ```
 ### Predicting F1 score from condition
 ```{r lmer.condition}
-m1 <- lmer(data = df.recall, f1_score ~ (1 | gameID) + (1 | tower_id))
-m2 <- lmer(data = df.recall, f1_score ~ condition + (1 | gameID) + (1 | tower_id))
-anova(m1, m2)
-summary(m2)
-
-# confint(m2, level = 0.95)
-
-```
-### Predicting F1 score from condition
-```{r lmer.condition}
-m1 <- lmer(data = df.recall, f1_score ~ condition + (1 | gameID))
+m1 <- lmer(data = df.recall.vss, f1_score ~ condition + (1 | gameID))
 # m2 <- lmer(data = df.recall, f1_score ~ condition + (1 | gameID) + (1 | tower_id))
 # anova(m1, m2)
 summary(m1)
@@ -126,6 +147,49 @@ summary(m1)
 # confint(m2, level = 0.95)
 
 ```
+
+```{r}
+experiment.results.dir = '../../results/recall/csv/'
+
+dfBestMatch <- read_csv(paste(experiment.results.dir, 'df_best_match_recalls_vss.csv', sep=''))
+
+conditionScoreDiffs <- 
+  dfBestMatch %>% 
+  filter(built_both) %>% 
+  group_by(gameID)  %>%
+    summarise(diff = bestMatchScoreMean[bestMatchCondition == 'build'] -
+                      bestMatchScoreMean[bestMatchCondition == 'view'], .groups = "drop")
+
+conditionScoreDiffs
+```
+
+```{r}
+buildScoreFiltered <-
+  dfBestMatch %>% 
+  filter(built_both, bestMatchCondition == 'build')
+
+
+viewScoreFiltered <-
+  dfBestMatch %>% 
+  filter(built_both, bestMatchCondition == 'view')
+
+```
+
+Paired t-test
+```{r}
+t.test(buildScoreFiltered$bestMatchScoreMean, viewScoreFiltered$bestMatchScoreMean, paired=TRUE)
+```
+Cohen's d
+```{r}
+cohens_d <- cohen.d(buildScoreFiltered$bestMatchScoreMean, viewScoreFiltered$bestMatchScoreMean)
+cohens_d
+
+```
+
+
+
+
+
 # E3 Encoding Type on Recognition
 
 ```{r import}
@@ -158,15 +222,16 @@ summary(m3)
 ```
 
 
+
+
+
+
 # E4 Encoding Type on Recall
 
 ```{r import}
 experiment.results.dir = '../../results/build_components/cogsci24/'
 
 df.recall.both <- read_csv(paste(experiment.results.dir, 'df_encode_with_recalls_both.csv', sep=''))
-# 
-# df.recall <- df.recall %>%
-#   mutate(respond_old = 1*(response_meaning == 'old'))
 
 df.recall.both$encode_type <- as.factor(df.recall.both$encode_type)
 df.recall.both$condition <- as.factor(df.recall.both$condition)
@@ -178,20 +243,32 @@ df.recall.both <- df.recall.both %>%
     condition = relevel(condition, ref = "view")
   )
 ```
+```{r glmer.attempted.condition}
+m1 <- glmer(data = df.recall.both, family = binomial, attempted_recall ~ encode_type + (1 | gameID))
+m2 <- glmer(data = df.recall.both, family = binomial, attempted_recall ~ encode_type + condition + (1 | gameID) )
+m3 <- glmer(data = df.recall.both, family = binomial, attempted_recall ~ encode_type * condition + (1 | gameID) )
+anova(m1, m2, m3)
+summary(m3)
 
-```{r lmer.condition}
+# confint(m2, level = 0.95)
+
+```
+
+
+```{r glmer.perfect.condition}
 m1 <- glmer(data = df.recall.both, family = binomial, perfectly_recalled ~ encode_type + (1 | gameID) + (1 | tower_id))
 m2 <- glmer(data = df.recall.both, family = binomial, perfectly_recalled ~ encode_type + condition + (1 | gameID) + (1 | tower_id))
-anova(m1, m2)
-summary(m2)
+m3 <- glmer(data = df.recall.both, family = binomial, perfectly_recalled ~ encode_type * condition + (1 | gameID) + (1 | tower_id))
+anova(m1, m2, m3)
+summary(m3)
 
 # confint(m2, level = 0.95)
 
 ```
-```{r f1.lm}
-m1 <- lm(data = df.recall.both, f1_score ~ encode_type)
-m2 <- lm(data = df.recall.both, f1_score ~ encode_type + condition)
-m3 <- lm(data = df.recall.both, f1_score ~ encode_type * condition)
+```{r lmer.perfect.condition}
+m1 <- lmer(data = df.recall.both, score ~ encode_type + (1 | gameID) + (1 | tower_id))
+m2 <- lmer(data = df.recall.both, score ~ encode_type + condition + (1 | gameID) + (1 | tower_id))
+m3 <- lmer(data = df.recall.both, score ~ encode_type * condition + (1 | gameID) + (1 | tower_id))
 anova(m1, m2, m3)
 summary(m3)
 
@@ -199,12 +276,4 @@ summary(m3)
 
 ```
 
-```{r f1.lmer}
-m1 <- lmer(data = df.recall.both, f1_score ~ encode_type + (1 + condition | gameID))
-m2 <- lmer(data = df.recall.both, f1_score ~ encode_type + condition + (1 + condition | gameID))
-m3 <- lmer(data = df.recall.both, f1_score ~ encode_type * condition + (1 + condition | gameID))
-anova(m1, m2, m3)
-summary(m3)
 
-# confint(m2, level = 0.95)
-```
