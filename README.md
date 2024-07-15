@@ -1,4 +1,19 @@
-# Consequences of building experience ("zipping")
+# How does building an object affect memory for it?
+
+## Paper
+Find our paper from the Cognitive Science conference 2024 here:
+https://cogtoolslab.github.io/pdf/mccarthy_cogsci_2024.pdf
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Setup
