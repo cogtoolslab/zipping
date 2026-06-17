@@ -1,0 +1,16 @@
+name: zipping_repr
+channels:
+  - defaults
+dependencies:
+  - python
+  - jupyter
+  - matplotlib
+  - numpy
+  - pandas
+  - pillow
+  - pymongo
+  - scipy
+  - seaborn
+  - scikit-image
+  - scikit-learn
+prefix: /Users/sean/miniconda3/envs/zipping_repr
