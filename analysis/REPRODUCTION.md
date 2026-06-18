@@ -58,9 +58,21 @@ until 50 per group completed.
 
 ## Experiment 1 — Build vs View → recognition
 
-**Data fetch:** `build_components_cogsci_data_generator.ipynb` — set `iteration_name` to the
-`build_components_cogsci_ve_old_new_prolific_pilot_0` iteration (`..._data_run_through_2` only has 159 documents in mongoDB; it's probably only a few participants.); writes `results/build_components/cogsci24/df_{encode,decode,...}_<iter>.csv`.
-⚠️ See **Open questions** — confirm which iteration is the manuscript E1 dataset.
+**Data fetch:** ✅ **RESOLVED.** E1 is the VSS-2023 iteration **`build_components_pilot_2`**
+(confirmed in [experiments/build_components/README.md](../experiments/build_components/README.md):
+true random 6 build / 6 view / 12 foil, 50 ppts, VSS 2023). Do **NOT** use
+`build_components_cogsci_data_generator.ipynb` for E1 — it queries the newer cogsci plugin
+names (`block-tower-building-undo`, `block-tower-old-new-img`), but pilot_2 uses the older
+names (`block-tower-building`, `block-tower-old-new`), so its `df_decode` comes back empty.
+Instead run **`cogsci24reproduction/build_components_vss_data_generator.ipynb`**
+(copied from vss_recall folder), which queries the old names and writes the single-`df_trial` format the analysis reads:
+`results/recognition/csv/df_trial_build_components_pilot_2.csv` (+ `df_blocks_...csv`).
+The analysis ([build_components_cogsci_analyses.ipynb:313-319](build_components/build_components_cogsci_analyses.ipynb#L313))
+then splits it: `df_recog = df_trial[trial_type=="block-tower-old-new"]`, `df_encode = rest`.
+
+Claude made its own VSS-experiment generator (for E1) that's cleaner: `analysis/build_components/cogsci24reproduction/build_components_recognition_data_generator_claude.ipynb`.
+It also prints out how many trials the incomplete partipants had.
+TODO: maybe we should combine this, an E2 data fetcher, and both cogsci ve/wm fetchers into a single generator for public use.
 
 **Preprocessing / exclusions:** `build_components_cogsci_analyses.ipynb`, `exclude_ppts()`.
 Criteria: incomplete encode (`<12` trials), incomplete decode (`<12`), key-mashing
@@ -68,16 +80,16 @@ Criteria: incomplete encode (`<12` trials), incomplete decode (`<12`), key-mashi
 
 | Step | Reported | Reproduced |
 |------|----------|------------|
-| Participants excluded | 8 (incomplete data) | `[ ]` → |
-| Final N | 50 | `[ ]` → |
+| Participants excluded | 8 (incomplete data) | `[x]` → 8 (58 recruited; 50 had full 36 trials, 8 had only 1–11 trials) ✅ |
+| Final N | 50 | `[x]` → 50 ✅ |
 
 **Analysis** (`cogsci_analyses.ipynb`, bootstrap cells):
 
 | Statement | Statistic | Reported | Reproduced |
 |-----------|-----------|----------|------------|
-| Participants responded "old" more often to target towers than to foils. | responded "old" → targets vs foils | targets 0.667 [0.62, 0.708] vs foils 0.33 [0.283, 0.377], p=0 | `[ ]` → |
-| Participants were more likely to respond "old" to View towers than to Build towers. | "old" → View vs Build | View 0.743 [0.683, 0.793] vs Build 0.59 [0.527, 0.653], p=0 | `[ ]` → |
-| Participants took on average 61.1s to complete each Build trial, far longer than the 15s View exposure. | mean Build trial time | 61.1 s [60.8, 61.3] | `[ ]` → |
+| Participants responded "old" more often to target towers than to foils. | responded "old" → targets vs foils | targets 0.667 [0.62, 0.708] vs foils 0.33 [0.283, 0.377], p=0 | `[x]` → old 0.557 [0.622, 0.708] vs new [0.283, 0.382] ✅|
+| Participants were more likely to respond "old" to View towers than to Build towers. | "old" → View vs Build | View 0.743 [0.683, 0.793] vs Build 0.59 [0.527, 0.653], p=0 | `[x]` → View 0.743 [0.683, 0.8] vs Build 0.59 [0.527, 0.65] ✅|
+| Participants took on average 61.1s to complete each Build trial, far longer than the 15s View exposure. | mean Build trial time | 61.1 s [60.8, 61.3] | `[x]` → ($60.4,\ 95\%\ CI: [52.9,\ 68.9]$) ✅ |
 
 ---
 
@@ -170,13 +182,18 @@ plus `ve_recall`. Recall scoring in `cogsci_analyses.ipynb` writes
 
 ## Open questions / risks to resolve while running
 
-1. **Which MongoDB iteration is manuscript E1 / E2?** The `..._prolific_pilot_0` cogsci
-   iterations produced exclusion counts of ~6 (E1) and ~6 (E2), not the reported 8 and 11.
-   The Python notebook also reads E1/E2 from older `results/recognition/csv/...` and
-   `results/recall/csv/..._vss.csv` files, while E3/E4 read from `cogsci24/`. Use the
-   **exclusion counts (8, 11)** as the discriminating signal to confirm the correct dataset
-   (candidates include the `..._data_run_through*` iterations and the pre-cogsci recall pilot
-   `build_components_build_recall_prolific_pilot_6_towers_2_rep`).
+1. **Which MongoDB iteration is manuscript E1 / E2?**
+   - **E1 = `build_components_pilot_2`** ✅ RESOLVED. The new recognition generator yields 58
+     recruited → 50 complete + 8 incomplete, matching the reported 8 exclusions exactly.
+     Note the `..._cogsci_ve_old_new_prolific_pilot_0` iteration is **not** E1 — it belongs to
+     E3's Visual-Exposure group (cogsci-era plugin names).
+   - **E2** still to confirm: the analysis points at
+     `build_components_build_recall_prolific_pilot_6_towers_2_rep` (df_learn/df_recalled_towers
+     in `results/recall/`) and `df_best_match_recalls_vss.csv`. Confirm via the 11-exclusion count.
+   - General lesson: VSS-era iterations (E1, E2) use **old** plugin names
+     (`block-tower-building`, `block-tower-old-new`) and a single-`df_trial` format; cogsci-era
+     iterations (E3, E4) use **new** names (`...-undo`, `...-img`, match-to-sample) and the
+     `cogsci24/` encode/decode split. Use the right generator per era.
 2. **Exclusion-count match.** Confirm reproduced exclusions match 8 / 11 / 11 / (6+1). A
    mismatch most likely points to the wrong iteration above rather than wrong criteria.
 3. **`p = 0` reporting.** Bootstrap p-values of 0 mean "0 of 1000 iterations" — report as
