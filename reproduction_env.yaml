@@ -1,6 +1,7 @@
 name: zipping_repr
 channels:
   - defaults
+  - conda-forge
 dependencies:
   - python
   - jupyter
@@ -8,7 +9,7 @@ dependencies:
   - numpy
   - pandas
   - pillow
-  - pymongo
+  - pymongo=3.13.0
   - scipy
   - seaborn
   - scikit-image

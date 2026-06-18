@@ -59,8 +59,7 @@ until 50 per group completed.
 ## Experiment 1 — Build vs View → recognition
 
 **Data fetch:** `build_components_cogsci_data_generator.ipynb` — set `iteration_name` to the
-`build_components_cogsci_ve_old_new_*` iteration (e.g. `..._prolific_pilot_0` or
-`..._data_run_through_2`); writes `results/build_components/cogsci24/df_{encode,decode,...}_<iter>.csv`.
+`build_components_cogsci_ve_old_new_prolific_pilot_0` iteration (`..._data_run_through_2` only has 159 documents in mongoDB; it's probably only a few participants.); writes `results/build_components/cogsci24/df_{encode,decode,...}_<iter>.csv`.
 ⚠️ See **Open questions** — confirm which iteration is the manuscript E1 dataset.
 
 **Preprocessing / exclusions:** `build_components_cogsci_analyses.ipynb`, `exclude_ppts()`.
