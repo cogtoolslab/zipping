@@ -74,11 +74,11 @@ Criteria: incomplete encode (`<12` trials), incomplete decode (`<12`), key-mashi
 
 **Analysis** (`cogsci_analyses.ipynb`, bootstrap cells):
 
-| Statistic | Reported | Reproduced |
-|-----------|----------|------------|
-| "old" → targets vs foils | targets 0.667 [0.62, 0.708] vs foils 0.33 [0.283, 0.377], p=0 | `[ ]` → |
-| "old" → View vs Build | View 0.743 [0.683, 0.793] vs Build 0.59 [0.527, 0.653], p=0 | `[ ]` → |
-| mean Build trial time | 61.1 s [60.8, 61.3] | `[ ]` → |
+| Statement | Statistic | Reported | Reproduced |
+|-----------|-----------|----------|------------|
+| Participants responded "old" more often to target towers than to foils. | responded "old" → targets vs foils | targets 0.667 [0.62, 0.708] vs foils 0.33 [0.283, 0.377], p=0 | `[ ]` → |
+| Participants were more likely to respond "old" to View towers than to Build towers. | "old" → View vs Build | View 0.743 [0.683, 0.793] vs Build 0.59 [0.527, 0.653], p=0 | `[ ]` → |
+| Participants took on average 61.1s to complete each Build trial, far longer than the 15s View exposure. | mean Build trial time | 61.1 s [60.8, 61.3] | `[ ]` → |
 
 ---
 
@@ -100,13 +100,13 @@ recalled ≥1 tower in each condition) applied for the paired t-test.
 
 **Analysis** (`cogsci_analyses.ipynb` bootstraps + `build_components_cogsci.Rmd` ~L151–187 for t-test/d):
 
-| Statistic | Reported | Reproduced |
-|-----------|----------|------------|
-| avg towers submitted | 4.2 [3.7, 4.64] | `[ ]` → |
-| avg perfect reconstructions | 1.46 [1.06, 1.84] | `[ ]` → |
-| perfectly recalled: Build vs View | Build 0.56 [0.34, 0.78] vs View 0.9 [0.62, 1.22], p=0.020 | `[ ]` → |
-| towers paired to targets: Build vs View | Build 2.1 [1.82, 2.34] vs View 2.1 [1.8, 2.38], p=0.440 | `[ ]` → |
-| paired t-test recon IoU (View>Build) | p=0.0208, Cohen's d=0.433 | `[ ]` → |
+| Statement | Statistic | Reported | Reproduced |
+|-----------|-----------|----------|------------|
+| After removing duplicate submissions, participants submitted an average of 4.2 towers. | avg towers submitted | 4.2 [3.7, 4.64] | `[ ]` → |
+| On average, 1.46 of these towers were perfect reconstructions of a target tower. | avg perfect reconstructions | 1.46 [1.06, 1.84] | `[ ]` → |
+| Fewer Build towers were perfectly recalled than View towers. | perfectly recalled: Build vs View | Build 0.56 [0.34, 0.78] vs View 0.9 [0.62, 1.22], p=0.020 | `[ ]` → |
+| No reliable difference was found between the number of towers paired to targets from the Build and View conditions. | towers paired to targets: Build vs View | Build 2.1 [1.82, 2.34] vs View 2.1 [1.8, 2.38], p=0.440 | `[ ]` → |
+| Participants who recalled towers from both conditions built more accurate reconstructions of View condition towers. | paired t-test recon IoU (View>Build) | p=0.0208, Cohen's d=0.433 | `[ ]` → |
 
 ---
 
@@ -125,15 +125,15 @@ recalled ≥1 tower in each condition) applied for the paired t-test.
 
 **Analysis** (`cogsci_analyses.ipynb`):
 
-| Statistic | Reported | Reproduced |
-|-----------|----------|------------|
-| match-to-sample correct | 91.5% [86.3, 95.8] | `[ ]` → |
-| build-from-memory perfect | 73.3% [0.688, 0.774] | `[ ]` → |
-| VE: targets vs foils | 0.807 [0.76, 0.853] vs 0.29 [0.243, 0.34], p=0 | `[ ]` → |
-| VE: View vs Build | 0.833 [0.753, 0.9] vs 0.78 [0.713, 0.847], p=0.173 | `[ ]` → |
-| VE overall correct | 75.8% [71.8, 79.7] | `[ ]` → |
-| WM overall correct | 80.1% [76.3, 83.8] | `[ ]` → |
-| WM: Build vs View | 0.88 [0.827, 0.927] vs 0.873 [0.827, 0.92], p=0.565 | `[ ]` → |
+| Statement | Statistic | Reported | Reproduced |
+|-----------|-----------|----------|------------|
+| Participants correctly selected the target tower from 5 distractors on 91.5% of match-to-sample trials. | match-to-sample correct | 91.5% [86.3, 95.8] | `[ ]` → |
+| In the build-from-memory task, participants perfectly reconstructed the target tower on 73.3% of trials. | build-from-memory perfect | 73.3% [0.688, 0.774] | `[ ]` → |
+| The Visual Exposure group responded "old" to target towers more often than to foils. | VE: targets vs foils | 0.807 [0.76, 0.853] vs 0.29 [0.243, 0.34], p=0 | `[ ]` → |
+| (not significant) View towers were remembered marginally more often than Build towers in the Visual Exposure group. | VE: View vs Build | 0.833 [0.753, 0.9] vs 0.78 [0.713, 0.847], p=0.173 | `[ ]` → |
+| Recognition performance was stronger overall in the Visual Exposure group relative to Experiment 1. | VE overall correct | 75.8% [71.8, 79.7] | `[ ]` → |
+| Recognition performance was marginally more accurate overall in the Working Memory group. | WM overall correct | 80.1% [76.3, 83.8] | `[ ]` → |
+| The difference in responses between Build and View was even less distinct in the Working Memory group. | WM: Build vs View | 0.88 [0.827, 0.927] vs 0.873 [0.827, 0.92], p=0.565 | `[ ]` → |
 
 ---
 
@@ -155,17 +155,17 @@ plus `ve_recall`. Recall scoring in `cogsci_analyses.ipynb` writes
 (1|gameID) + (1|tower_id), family=binomial)`. Model 2: `lmer(score ~ encode_type*condition +
 (1|gameID) + (1|tower_id))` (non-reconstructed towers → IoU=0).
 
-| Statistic | Reported | Reproduced |
-|-----------|----------|------------|
-| match-to-sample correct | 86.7% [81.3, 91.7] | `[ ]` → |
-| build-from-memory perfect | 73.9% [0.7, 0.778] | `[ ]` → |
-| avg towers submitted | 3.78 [3.44, 4.11] | `[ ]` → |
-| glmer perfectly_recalled — WM (encode_type) | b=-0.595, z=-1.35, p=0.177 | `[ ]` → |
-| glmer perfectly_recalled — Build (condition) | b=-0.879, z=-2.52, p=0.0117 | `[ ]` → |
-| glmer perfectly_recalled — interaction | b=1.62, z=3.33, p<0.001 | `[ ]` → |
-| lmer score (IoU) — encode_type | b=-0.09261, t=-1.58, p=0.116 | `[ ]` → |
-| lmer score (IoU) — Build (condition) | b=-0.143, t=-3.00, p=0.00346 | `[ ]` → |
-| lmer score (IoU) — interaction | b=0.247, t=3.67, p<0.001 | `[ ]` → |
+| Statement | Statistic | Reported | Reproduced |
+|-----------|-----------|----------|------------|
+| The Working Memory group correctly selected the target tower on 86.7% of match-to-sample trials. | match-to-sample correct | 86.7% [81.3, 91.7] | `[ ]` → |
+| The Working Memory group perfectly reconstructed the target tower on 73.9% of build-from-memory trials. | build-from-memory perfect | 73.9% [0.7, 0.778] | `[ ]` → |
+| Participants submitted towers on 3.78 towers on average. | avg towers submitted | 3.78 [3.44, 4.11] | `[ ]` → |
+| No evidence that the Working Memory tasks reliably led to a better or worse ability to perfectly recall towers. | glmer perfectly_recalled — WM (encode_type) | b=-0.595, z=-1.35, p=0.177 | `[ ]` → |
+| Build towers were recalled less frequently than View towers. | glmer perfectly_recalled — Build (condition) | b=-0.879, z=-2.52, p=0.0117 | `[ ]` → |
+| Build towers were recalled more often than View towers when encoded in the Working Memory tasks. | glmer perfectly_recalled — interaction | b=1.62, z=3.33, p<0.001 | `[ ]` → |
+| No reliable effect of encoding group (Visual Exposure vs Working Memory) on reconstruction accuracy. | lmer score (IoU) — encode_type | b=-0.09261, t=-1.58, p=0.116 | `[ ]` → |
+| A small negative main effect of the Build condition on reconstruction accuracy. | lmer score (IoU) — Build (condition) | b=-0.143, t=-3.00, p=0.00346 | `[ ]` → |
+| Build towers were recalled more accurately than View towers in the Working Memory condition. | lmer score (IoU) — interaction | b=0.247, t=3.67, p<0.001 | `[ ]` → |
 
 ---
 
