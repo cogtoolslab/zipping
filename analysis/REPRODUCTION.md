@@ -89,16 +89,20 @@ Criteria: incomplete encode (`<12` trials), incomplete decode (`<12`), key-mashi
 |-----------|-----------|----------|------------|
 | Participants responded "old" more often to target towers than to foils. | responded "old" → targets vs foils | targets 0.667 [0.62, 0.708] vs foils 0.33 [0.283, 0.377], p=0 | `[x]` → old 0.557 [0.622, 0.708] vs new [0.283, 0.382] ✅|
 | Participants were more likely to respond "old" to View towers than to Build towers. | "old" → View vs Build | View 0.743 [0.683, 0.793] vs Build 0.59 [0.527, 0.653], p=0 | `[x]` → View 0.743 [0.683, 0.8] vs Build 0.59 [0.527, 0.65] ✅|
-| Participants took on average 61.1s to complete each Build trial, far longer than the 15s View exposure. | mean Build trial time | 61.1 s [60.8, 61.3] | `[x]` → ($60.4,\ 95\%\ CI: [52.9,\ 68.9]$) ✅ |
+| Participants took on average 61.1s to complete each Build trial, far longer than the 15s View exposure. | mean Build trial time | 61.1 s [60.8, 61.3] | `[x]` → ($60.4,\ 95\%\ CI: [52.9,\ 68.9]$) ??? |
 
 ---
 
 ## Experiment 2 — Build vs View → recall
 
-**Data fetch:** `build_components_cogsci_data_generator.ipynb`, `build_components_cogsci_ve_recall_*`
+**Data fetch:** Likely is the `build_components_build_recall_prolific_pilot_6_towers_2_rep` iteration, which has 50 completed ppts and 11 incomplete (matching the reported 11 exclusions). Fetch via `analysis/build_components/cogsci24reproduction/build_components_vss_build_recall_data_generator.ipynb` (copied from recall_vss).
+
+<!--
+`build_components_cogsci_data_generator.ipynb`, `build_components_cogsci_ve_recall_*`
 iteration. ⚠️ The R analysis reads `results/recall/csv/df_best_match_recalls_vss.csv` — confirm
 whether manuscript E2 uses the cogsci `ve_recall` iteration or the earlier "vss"/pilot recall
 data (see **Open questions**).
+-->
 
 **Preprocessing / exclusions:** `cogsci_analyses.ipynb` (`exclude_ppts()`, decode threshold
 `<1`); recall scoring via `iou()` + best-match mapping; `built_both` filter (participant
